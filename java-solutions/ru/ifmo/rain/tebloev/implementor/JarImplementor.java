@@ -8,6 +8,7 @@ import javax.tools.ToolProvider;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.CodeSource;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -29,6 +30,21 @@ public class JarImplementor extends Implementor implements JarImpler {
         return filepath.toString().replace(File.separator, "/");
     }
 
+    /**
+     * Returns classpath for specified token.
+     *
+     * @param token {@link Class} object
+     * @return classpath for specified token
+     */
+    private String getTokenClasspath(final Class<?> token) {
+        CodeSource cs = token.getProtectionDomain().getCodeSource();
+        if (cs == null) {
+            return ".";
+        }
+
+        return cs.getLocation().toString();
+    }
+
     @Override
     public void implementJar(Class<?> token, Path jarFile) throws ImplerException {
         try {
@@ -39,7 +55,7 @@ public class JarImplementor extends Implementor implements JarImpler {
 
             implement(token, root);
 
-            String classpath = System.getProperty("java.class.path");
+            String classpath = getTokenClasspath(token);
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
             if (compiler.run(null, null, null, "-cp", classpath, sourceFile.toString()) != 0) {
