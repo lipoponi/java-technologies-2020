@@ -9,4 +9,4 @@ sources="./java-advanced-2020-solutions/java-solutions/ru/ifmo/rain/tebloev/impl
 javac -d $output -cp "$classpath" $sources
 
 cd ./java-advanced-2020-solutions/java-solutions/ru/ifmo/rain/tebloev/implementor/_build || exit
-jar --create --file ../_implemetor.jar ./ru
+jar --create --file ../_implementor.jar ./ru
