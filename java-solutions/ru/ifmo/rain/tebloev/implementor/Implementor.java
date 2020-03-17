@@ -1,0 +1,51 @@
+package ru.ifmo.rain.tebloev.implementor;
+
+import info.kgeorgiy.java.advanced.implementor.Impler;
+import info.kgeorgiy.java.advanced.implementor.ImplerException;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+/**
+ * Implements specified base token.
+ *
+ * @author Stanislav Tebloev
+ */
+public class Implementor implements Impler {
+    /**
+     * Returns package {@link Path} for specified token.
+     *
+     * @return {@link Path} object of package containing specified token
+     */
+    protected Path getPackagePath(final Class<?> token) {
+        return Path.of(token.getPackageName().replace(".", File.separator));
+    }
+
+    /**
+     * Returns implementation name for specified {@link Class} token.
+     *
+     * @param token {@link Class} object
+     * @return implementation name for token
+     */
+    protected String getImplName(final Class<?> token) {
+        return token.getSimpleName() + "Impl";
+    }
+
+    @Override
+    public void implement(Class<?> token, Path root) throws ImplerException {
+        try {
+            Path packageRoot = root.resolve(getPackagePath(token));
+            Files.createDirectories(packageRoot);
+            File filepath = packageRoot.resolve(getImplName(token) + ".java").toFile();
+
+            CodeGenerator generator = new CodeGenerator();
+            try (Writer writer = new BufferedWriter(new FileWriter(filepath, StandardCharsets.UTF_8))) {
+                generator.writeTokenImplementation(writer, token);
+            }
+        } catch (Exception e) {
+            throw new ImplerException(e);
+        }
+    }
+}
