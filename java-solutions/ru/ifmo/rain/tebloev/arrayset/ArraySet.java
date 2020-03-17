@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.function.Predicate;
 
 public class ArraySet<E> extends AbstractSet<E> implements NavigableSet<E> {
-    class ArraySetIterator implements Iterator<E> {
+    private class ArraySetIterator implements Iterator<E> {
         private final List<E> data;
         private final boolean reversed;
         private int position = -1;
@@ -38,12 +38,13 @@ public class ArraySet<E> extends AbstractSet<E> implements NavigableSet<E> {
     }
 
     private List<E> data;
-    private Comparator<? super E> comparator;
-    private boolean reversed = false;
+    private final Comparator<? super E> comparator;
+    private final boolean reversed;
 
     public ArraySet() {
         data = List.copyOf(new ArrayList<>());
         comparator = null;
+        reversed = false;
     }
 
     public ArraySet(final Collection<? extends E> source) {
@@ -61,6 +62,14 @@ public class ArraySet<E> extends AbstractSet<E> implements NavigableSet<E> {
 
             data = List.copyOf(tree);
         }
+
+        reversed = false;
+    }
+
+    private ArraySet(final List<E> source, final Comparator<? super E> comparator, boolean isReversed) {
+        this.data = source;
+        this.comparator = comparator;
+        this.reversed = isReversed;
     }
 
     private int compare(final E lhs, final E rhs) {
@@ -75,9 +84,9 @@ public class ArraySet<E> extends AbstractSet<E> implements NavigableSet<E> {
 
     private boolean isSorted(final Collection<? extends E> source) {
         Iterator<? extends E> iterator = source.iterator();
-        E last, current = null;
+        E current = null;
         while (iterator.hasNext()) {
-            last = current;
+            E last = current;
             current = iterator.next();
             if (last != null && 0 < compare(last, current)) {
                 return false;
@@ -202,6 +211,11 @@ public class ArraySet<E> extends AbstractSet<E> implements NavigableSet<E> {
     @Override
     public boolean contains(Object o) {
         try {
+            /**
+             * find(null) throws NullPointerException
+             * if o is incompatible with this collection find(o) will throw ClassCastException
+             * if find(o) returned correct index this function should return true
+             */
             return 0 <= find(o);
         } catch (ClassCastException e) {
             return false;
@@ -217,12 +231,7 @@ public class ArraySet<E> extends AbstractSet<E> implements NavigableSet<E> {
 
     @Override
     public ArraySet<E> descendingSet() {
-        ArraySet<E> result = new ArraySet<>();
-        result.data = data;
-        result.comparator = comparator;
-        result.reversed = !reversed;
-
-        return result;
+        return new ArraySet<E>(data, comparator, !reversed);
     }
 
 
@@ -234,11 +243,7 @@ public class ArraySet<E> extends AbstractSet<E> implements NavigableSet<E> {
 
 
     private ArraySet<E> subSetByIndices(int l, int r) {
-        ArraySet<E> result = new ArraySet<>();
-        result.data = data.subList(l, r);
-        result.comparator = comparator;
-
-        return result;
+        return new ArraySet<E>(data.subList(l, r), comparator, false);
     }
 
 
