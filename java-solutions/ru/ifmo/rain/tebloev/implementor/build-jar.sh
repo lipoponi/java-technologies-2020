@@ -15,4 +15,4 @@ modulesourcepath="$packageroot/_build"
 javac --module ru.ifmo.rain.tebloev.implementor --module-source-path $modulesourcepath -p $modulepath -d $output
 
 cd $packageroot || exit 1
-jar --create --file=_implementor.jar --module-version=1.0 -C _build/out/ru.ifmo.rain.tebloev.implementor .
+jar --create --file=_implementor.jar --module-version=1.0 --main-class=ru.ifmo.rain.tebloev.implementor.JarImplementor -C _build/out/ru.ifmo.rain.tebloev.implementor .
