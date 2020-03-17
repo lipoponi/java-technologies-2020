@@ -132,9 +132,10 @@ public class StudentDB implements AdvancedStudentGroupQuery {
     public String getMostPopularName(Collection<Student> students) {
         return students.stream()
                 .collect(Collectors.groupingBy(StudentDB::getFullName)).entrySet().stream()
-                .max(Comparator
-                        .comparing((Map.Entry<String, List<Student>> entry) ->
-                                getGroups(entry.getValue()).stream().distinct().count())
+                .map((Map.Entry<String, List<Student>> entry) -> {
+                    return Map.entry(entry.getKey(), getGroups(entry.getValue()).stream().distinct().count());
+                })
+                .max(Comparator.comparing((Function<Map.Entry<String, Long>, Long>) Map.Entry::getValue)
                         .thenComparing(Map.Entry::getKey))
                 .map(Map.Entry::getKey).orElse(DEFAULT_STRING);
     }
