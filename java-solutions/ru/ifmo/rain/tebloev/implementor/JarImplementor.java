@@ -1,5 +1,6 @@
 package ru.ifmo.rain.tebloev.implementor;
 
+import info.kgeorgiy.java.advanced.implementor.Impler;
 import info.kgeorgiy.java.advanced.implementor.ImplerException;
 import info.kgeorgiy.java.advanced.implementor.JarImpler;
 
@@ -16,6 +17,7 @@ import java.util.jar.Manifest;
 
 /**
  * Implements specified base token and produces jar file with result.
+ *
  * @author Stanislav Tebloev
  */
 public class JarImplementor extends Implementor implements JarImpler {
@@ -73,6 +75,10 @@ public class JarImplementor extends Implementor implements JarImpler {
                 jos.putNextEntry(new JarEntry(entryName));
                 is.transferTo(jos);
             }
+        } catch (ImplerException e) {
+            throw e;
+        } catch (IOException e) {
+            throw new ImplerException("io operation cannot be done", e);
         } catch (Exception e) {
             throw new ImplerException(e);
         }
@@ -98,7 +104,7 @@ public class JarImplementor extends Implementor implements JarImpler {
             } catch (ImplerException e) {
                 throw e;
             } catch (Exception e) {
-                throw new ImplerException(e);
+                throw new ImplerException("arguments are invalid", e);
             }
         } catch (ImplerException e) {
             System.err.println(e.getMessage());

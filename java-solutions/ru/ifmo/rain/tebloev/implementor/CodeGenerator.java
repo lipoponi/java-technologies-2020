@@ -5,10 +5,7 @@ import info.kgeorgiy.java.advanced.implementor.ImplerException;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -129,7 +126,7 @@ class CodeGenerator {
      *
      * @param executable class method or constructor
      * @param returnType return type of {@code executable}
-     * @param name the name of {@code executable}
+     * @param name       the name of {@code executable}
      * @return definition string for {@code executable}
      */
     private String getExecutableSignature(final Executable executable, Type returnType, final String name) {
@@ -226,11 +223,21 @@ class CodeGenerator {
         List<Class<?>> list = new ArrayList<>();
         list.add(token);
 
+        Set<Class<?>> visited = new HashSet<Class<?>>();
+
         for (int i = 0; i < list.size(); i++) {
             Class<?> current = list.get(i);
-            list.addAll(List.of(current.getInterfaces()));
-            if (current.getSuperclass() != null) {
-                list.add(current.getSuperclass());
+            for (Class<?> interfaceToken : current.getInterfaces()) {
+                if (!visited.contains(interfaceToken)) {
+                    list.add(interfaceToken);
+                    visited.add(interfaceToken);
+                }
+            }
+
+            Class<?> base = current.getSuperclass();
+            if (base != null) {
+                list.add(base);
+                visited.add(base);
             }
         }
 
@@ -266,7 +273,7 @@ class CodeGenerator {
      * Generates whole file of implementation and writes it to provided {@link Writer}.
      *
      * @param writer {@link Writer} to write
-     * @param token {@link Class} token of base class or interface
+     * @param token  {@link Class} token of base class or interface
      * @throws ImplerException if no implementation can be created
      */
     public void writeTokenImplementation(final Writer writer, final Class<?> token) throws ImplerException {
@@ -280,7 +287,11 @@ class CodeGenerator {
             throw new ImplerException("base class cannot be final");
         }
 
-        if (token.equals(Enum.class) || Enum.class.equals(token.getSuperclass())) {
+        if (token.isArray()) {
+            throw new ImplerException("cannot inherit from array");
+        }
+
+        if (token.isEnum() || token.equals(Enum.class)) {
             throw new ImplerException("cannot inherit from enum");
         }
 

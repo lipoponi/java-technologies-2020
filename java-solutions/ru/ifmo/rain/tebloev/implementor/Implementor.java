@@ -45,6 +45,10 @@ public class Implementor implements Impler {
             try (Writer writer = new BufferedWriter(new FileWriter(filepath, StandardCharsets.UTF_8))) {
                 generator.writeTokenImplementation(writer, token);
             }
+        } catch (ImplerException e) {
+            throw e;
+        } catch (IOException e) {
+            throw new ImplerException("io operation cannot be done", e);
         } catch (Exception e) {
             throw new ImplerException(e);
         }
@@ -70,7 +74,7 @@ public class Implementor implements Impler {
             } catch (ImplerException e) {
                 throw e;
             } catch (Exception e) {
-                throw new ImplerException(e);
+                throw new ImplerException("arguments are invalid", e);
             }
         } catch (ImplerException e) {
             System.err.println(e.getMessage());
