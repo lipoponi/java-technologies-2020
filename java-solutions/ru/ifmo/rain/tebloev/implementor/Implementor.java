@@ -2,6 +2,7 @@ package ru.ifmo.rain.tebloev.implementor;
 
 import info.kgeorgiy.java.advanced.implementor.Impler;
 import info.kgeorgiy.java.advanced.implementor.ImplerException;
+import info.kgeorgiy.java.advanced.implementor.JarImpler;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -46,6 +47,33 @@ public class Implementor implements Impler {
             }
         } catch (Exception e) {
             throw new ImplerException(e);
+        }
+    }
+
+    /**
+     * Generates implementation for specified command line arguments. Required
+     * arguments are {@code classname} and {@code output path}. Usage:
+     * {@code <classname> <output path>}
+     *
+     * @param args two command line arguments
+     */
+    public static void main(String[] args) {
+        if (args == null || args.length != 2) {
+            System.err.println("usage: <classname> <output path>");
+            return;
+        }
+
+        try {
+            Impler implementor = new Implementor();
+            try {
+                implementor.implement(Class.forName(args[0]), Path.of(args[1]));
+            } catch (ImplerException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new ImplerException(e);
+            }
+        } catch (ImplerException e) {
+            System.err.println(e.getMessage());
         }
     }
 }

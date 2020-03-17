@@ -80,27 +80,21 @@ public class JarImplementor extends Implementor implements JarImpler {
 
     /**
      * Generates implementation for specified command line arguments. Required
-     * arguments are {@code classname} and {@code output path}, optional
-     * argument is {@code -jar}. If {@code -jar} flag appears implementation
-     * defined by {@link #implementJar}, otherwise by {@link #implement}.
+     * arguments are {@code classname} and {@code output file}. Usage:
+     * {@code -jar <classname> <output file>}
      *
-     * @param args two or three command line arguments
+     * @param args three command line arguments
      */
     public static void main(String[] args) {
-        if (args == null || args.length != 2 && args.length != 3) {
+        if (args == null || args.length != 3 || !"-jar".equals(args[0])) {
             System.err.println("usage: -jar <classname> <output file>");
-            System.err.println("usage: <classname> <output dir>");
             return;
         }
 
         try {
             JarImpler implementor = new JarImplementor();
             try {
-                if (args[0].equals("-jar")) {
-                    implementor.implementJar(Class.forName(args[1]), Path.of(args[2]));
-                } else {
-                    implementor.implement(Class.forName(args[0]), Path.of(args[1]));
-                }
+                implementor.implementJar(Class.forName(args[1]), Path.of(args[2]));
             } catch (ImplerException e) {
                 throw e;
             } catch (Exception e) {
