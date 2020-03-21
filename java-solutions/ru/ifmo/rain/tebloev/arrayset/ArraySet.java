@@ -66,10 +66,10 @@ public class ArraySet<E> extends AbstractSet<E> implements NavigableSet<E> {
         reversed = false;
     }
 
-    private ArraySet(final List<E> source, final Comparator<? super E> comparator, boolean isReversed) {
+    private ArraySet(final List<E> source, final Comparator<? super E> comparator, boolean reversed) {
         this.data = source;
         this.comparator = comparator;
-        this.reversed = isReversed;
+        this.reversed = reversed;
     }
 
     private int compare(final E lhs, final E rhs) {
