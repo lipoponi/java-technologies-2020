@@ -4,7 +4,6 @@ import info.kgeorgiy.java.advanced.student.AdvancedStudentGroupQuery;
 import info.kgeorgiy.java.advanced.student.Group;
 import info.kgeorgiy.java.advanced.student.Student;
 
-
 import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -132,9 +131,8 @@ public class StudentDB implements AdvancedStudentGroupQuery {
     public String getMostPopularName(Collection<Student> students) {
         return students.stream()
                 .collect(Collectors.groupingBy(StudentDB::getFullName)).entrySet().stream()
-                .map((Map.Entry<String, List<Student>> entry) -> {
-                    return Map.entry(entry.getKey(), getGroups(entry.getValue()).stream().distinct().count());
-                })
+                .map((Map.Entry<String, List<Student>> entry) ->
+                        Map.entry(entry.getKey(), getGroups(entry.getValue()).stream().distinct().count()))
                 .max(Comparator.comparing((Function<Map.Entry<String, Long>, Long>) Map.Entry::getValue)
                         .thenComparing(Map.Entry::getKey))
                 .map(Map.Entry::getKey).orElse(DEFAULT_STRING);

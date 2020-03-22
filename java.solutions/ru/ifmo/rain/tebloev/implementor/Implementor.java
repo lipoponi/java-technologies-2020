@@ -2,7 +2,6 @@ package ru.ifmo.rain.tebloev.implementor;
 
 import info.kgeorgiy.java.advanced.implementor.Impler;
 import info.kgeorgiy.java.advanced.implementor.ImplerException;
-import info.kgeorgiy.java.advanced.implementor.JarImpler;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -42,7 +41,7 @@ public class Implementor implements Impler {
             File filepath = packageRoot.resolve(getImplName(token) + ".java").toFile();
 
             CodeGenerator generator = new CodeGenerator();
-            try (Writer writer = new BufferedWriter(new FileWriter(filepath, StandardCharsets.UTF_8))) {
+            try (Writer writer = new AsciiEscapingWriter(new BufferedWriter(new FileWriter(filepath, StandardCharsets.UTF_8)))) {
                 generator.writeTokenImplementation(writer, token);
             }
         } catch (ImplerException e) {

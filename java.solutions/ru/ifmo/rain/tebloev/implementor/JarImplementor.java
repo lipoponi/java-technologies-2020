@@ -1,15 +1,14 @@
 package ru.ifmo.rain.tebloev.implementor;
 
-import info.kgeorgiy.java.advanced.implementor.Impler;
 import info.kgeorgiy.java.advanced.implementor.ImplerException;
 import info.kgeorgiy.java.advanced.implementor.JarImpler;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 import java.io.*;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.CodeSource;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -39,12 +38,11 @@ public class JarImplementor extends Implementor implements JarImpler {
      * @return classpath for specified token
      */
     private String getTokenClasspath(final Class<?> token) {
-        CodeSource cs = token.getProtectionDomain().getCodeSource();
-        if (cs == null) {
-            return ".";
+        try {
+            return Path.of(token.getProtectionDomain().getCodeSource().getLocation().toURI()).toString();
+        } catch (final URISyntaxException e) {
+            throw new AssertionError(e);
         }
-
-        return cs.getLocation().toString();
     }
 
     @Override
@@ -61,7 +59,7 @@ public class JarImplementor extends Implementor implements JarImpler {
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
             if (compiler.run(null, null, null, "-cp", classpath, sourceFile.toString()) != 0) {
-                throw new ImplerException("compilation errors");
+                throw new ImplerException("compilation error");
             }
 
             Manifest manifest = new Manifest();
