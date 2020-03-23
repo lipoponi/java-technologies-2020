@@ -8,9 +8,11 @@ module java.solutions {
     requires info.kgeorgiy.java.advanced.arrayset;
     requires info.kgeorgiy.java.advanced.student;
     requires info.kgeorgiy.java.advanced.implementor;
+    requires info.kgeorgiy.java.advanced.concurrent;
 
     exports ru.ifmo.rain.tebloev.walk;
     exports ru.ifmo.rain.tebloev.arrayset;
     exports ru.ifmo.rain.tebloev.student;
     exports ru.ifmo.rain.tebloev.implementor;
+    exports ru.ifmo.rain.tebloev.concurrent;
 }
