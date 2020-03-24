@@ -8,7 +8,8 @@ rm -rf "$workingdir/_build"
 cd ../../../../../../
 modulepath="../java-advanced-2020/lib/:../java-advanced-2020/artifacts/"
 output="$workingdir/_build"
-javac -p "$modulepath" -d "$output" $(find -name "*.java")
+# shellcheck disable=SC2046
+javac -p "$modulepath" -d "$output" $(find . -name "*.java")
 
 cd "$workingdir" || exit 1
 jar --create --file=_implementor.jar \
