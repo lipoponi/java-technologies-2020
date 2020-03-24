@@ -14,4 +14,4 @@ cd "$workingdir" || exit 1
 jar --create --file=_implementor.jar \
   --module-version=1.0 \
   --main-class=ru.ifmo.rain.tebloev.implementor.JarImplementor \
-  -C _build/ module-info.class
+  -C _build/ .
