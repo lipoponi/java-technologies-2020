@@ -7,14 +7,14 @@ import java.io.Writer;
 /**
  * Writer that converts Unicode to ASCII with escape sequences.
  */
-public class AsciiEscapingWriter extends FilterWriter {
+public class UnicodeEscapingWriter extends FilterWriter {
     /**
-     * Create a new {@link AsciiEscapingWriter}.
+     * Create a new {@link UnicodeEscapingWriter}.
      *
      * @param out a Writer object to provide the underlying stream.
      * @throws NullPointerException if <code>out</code> is <code>null</code>
      */
-    public AsciiEscapingWriter(final Writer out) {
+    public UnicodeEscapingWriter(final Writer out) {
         super(out);
     }
 

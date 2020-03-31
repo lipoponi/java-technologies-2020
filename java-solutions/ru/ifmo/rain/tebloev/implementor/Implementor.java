@@ -41,7 +41,7 @@ public class Implementor implements Impler {
             File filepath = packageRoot.resolve(getImplName(token) + ".java").toFile();
 
             CodeGenerator generator = new CodeGenerator();
-            try (Writer writer = new AsciiEscapingWriter(new BufferedWriter(new FileWriter(filepath, StandardCharsets.UTF_8)))) {
+            try (Writer writer = new UnicodeEscapingWriter(new BufferedWriter(new FileWriter(filepath, StandardCharsets.UTF_8)))) {
                 generator.writeTokenImplementation(writer, token);
             }
         } catch (ImplerException e) {
