@@ -3,9 +3,12 @@ package ru.ifmo.rain.tebloev.implementor;
 import info.kgeorgiy.java.advanced.implementor.Impler;
 import info.kgeorgiy.java.advanced.implementor.ImplerException;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 
 /**
@@ -29,7 +32,7 @@ public class Implementor implements Impler {
      * @param token {@link Class} object
      * @return implementation name for token
      */
-    protected String getImplName(final Class<?> token) {
+    protected String getResultName(final Class<?> token) {
         return token.getSimpleName() + "Impl";
     }
 
@@ -37,19 +40,23 @@ public class Implementor implements Impler {
     public void implement(Class<?> token, Path root) throws ImplerException {
         try {
             Path packageRoot = root.resolve(getPackagePath(token));
-            Files.createDirectories(packageRoot);
-            File filepath = packageRoot.resolve(getImplName(token) + ".java").toFile();
+            Path filepath = packageRoot.resolve(getResultName(token) + ".java");
+            try {
+                Files.createDirectories(packageRoot);
+            } catch (IOException e) {
+                throw new ImplerException("cannot create directories for result", e);
+            }
 
             CodeGenerator generator = new CodeGenerator();
-            try (Writer writer = new UnicodeEscapingWriter(new BufferedWriter(new FileWriter(filepath, StandardCharsets.UTF_8)))) {
+            try (Writer writer = new UnicodeEscapingWriter(Files.newBufferedWriter(filepath, StandardCharsets.UTF_8))) {
                 generator.writeTokenImplementation(writer, token);
+            } catch (IOException e) {
+                throw new ImplerException("cannot write result", e);
             }
         } catch (ImplerException e) {
             throw e;
-        } catch (IOException e) {
-            throw new ImplerException("io operation cannot be done", e);
         } catch (Exception e) {
-            throw new ImplerException(e);
+            throw new ImplerException("unknown error", e);
         }
     }
 
@@ -61,19 +68,17 @@ public class Implementor implements Impler {
      * @param args two command line arguments
      */
     public static void main(String[] args) {
-        if (args == null || args.length != 2) {
-            System.err.println("usage: <classname> <output path>");
-            return;
-        }
-
         try {
-            Impler implementor = new Implementor();
+            if (args == null || args.length != 2) {
+                throw new ImplerException("usage: <classname> <output path>");
+            }
+
             try {
-                implementor.implement(Class.forName(args[0]), Path.of(args[1]));
-            } catch (ImplerException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new ImplerException("arguments are invalid", e);
+                new Implementor().implement(Class.forName(args[0]), Path.of(args[1]));
+            } catch (ClassNotFoundException e) {
+                throw new ImplerException("class not found", e);
+            } catch (InvalidPathException e) {
+                throw new ImplerException("invalid path", e);
             }
         } catch (ImplerException e) {
             System.err.println(e.getMessage());

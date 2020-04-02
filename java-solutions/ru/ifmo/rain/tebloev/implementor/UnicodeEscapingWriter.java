@@ -6,13 +6,15 @@ import java.io.Writer;
 
 /**
  * Writer that converts Unicode to ASCII with escape sequences.
+ *
+ * @author Stanislav Tebloev
  */
 public class UnicodeEscapingWriter extends FilterWriter {
     /**
      * Create a new {@link UnicodeEscapingWriter}.
      *
      * @param out a Writer object to provide the underlying stream.
-     * @throws NullPointerException if <code>out</code> is <code>null</code>
+     * @throws NullPointerException if {@code out} is {@code null}
      */
     public UnicodeEscapingWriter(final Writer out) {
         super(out);

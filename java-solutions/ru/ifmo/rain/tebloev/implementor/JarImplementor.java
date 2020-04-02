@@ -8,6 +8,7 @@ import javax.tools.ToolProvider;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
@@ -48,10 +49,15 @@ public class JarImplementor extends Implementor implements JarImpler {
     @Override
     public void implementJar(Class<?> token, Path jarFile) throws ImplerException {
         try {
-            Path root = Path.of(System.getProperty("java.io.tmpdir")).resolve("implementor");
+            Path root;
+            try {
+                root = Files.createTempDirectory(null);
+            } catch (IOException e) {
+                throw new ImplerException("cannot create temporary folder", e);
+            }
             Path packageRoot = root.resolve(getPackagePath(token));
-            File sourceFile = packageRoot.resolve(getImplName(token) + ".java").toFile();
-            File classFile = packageRoot.resolve(getImplName(token) + ".class").toFile();
+            File sourceFile = packageRoot.resolve(getResultName(token) + ".java").toFile();
+            File classFile = packageRoot.resolve(getResultName(token) + ".class").toFile();
 
             implement(token, root);
 
@@ -65,20 +71,25 @@ public class JarImplementor extends Implementor implements JarImpler {
             Manifest manifest = new Manifest();
             manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
 
-            Files.createDirectories(jarFile.getParent());
+            try {
+                Files.createDirectories(jarFile.getParent());
+            } catch (IOException e) {
+                throw new ImplerException("cannot create output directories", e);
+            }
+
             try (InputStream is = new FileInputStream(classFile);
                  JarOutputStream jos = new JarOutputStream(new FileOutputStream(jarFile.toFile()), manifest)) {
-                String entryName = toJarEntryName(getPackagePath(token).resolve(getImplName(token) + ".class"));
+                String entryName = toJarEntryName(getPackagePath(token).resolve(getResultName(token) + ".class"));
 
                 jos.putNextEntry(new JarEntry(entryName));
                 is.transferTo(jos);
+            } catch (IOException e) {
+                throw new ImplerException("cannot create jar-file", e);
             }
         } catch (ImplerException e) {
             throw e;
-        } catch (IOException e) {
-            throw new ImplerException("io operation cannot be done", e);
         } catch (Exception e) {
-            throw new ImplerException(e);
+            throw new ImplerException("unknown error", e);
         }
     }
 
@@ -90,19 +101,17 @@ public class JarImplementor extends Implementor implements JarImpler {
      * @param args three command line arguments
      */
     public static void main(String[] args) {
-        if (args == null || args.length != 3 || !"-jar".equals(args[0])) {
-            System.err.println("usage: -jar <classname> <output file>");
-            return;
-        }
-
         try {
-            JarImpler implementor = new JarImplementor();
+            if (args == null || args.length != 3 || !"-jar".equals(args[0])) {
+                throw new ImplerException("usage: -jar <classname> <output file>");
+            }
+
             try {
-                implementor.implementJar(Class.forName(args[1]), Path.of(args[2]));
-            } catch (ImplerException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new ImplerException("arguments are invalid", e);
+                new JarImplementor().implementJar(Class.forName(args[1]), Path.of(args[2]));
+            } catch (ClassNotFoundException e) {
+                throw new ImplerException("class not found", e);
+            } catch (InvalidPathException e) {
+                throw new ImplerException("invalid path", e);
             }
         } catch (ImplerException e) {
             System.err.println(e.getMessage());
