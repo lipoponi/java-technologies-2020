@@ -9,6 +9,7 @@ module java.solutions {
     requires info.kgeorgiy.java.advanced.student;
     requires info.kgeorgiy.java.advanced.implementor;
     requires info.kgeorgiy.java.advanced.concurrent;
+    requires info.kgeorgiy.java.advanced.mapper;
 
     exports ru.ifmo.rain.tebloev.walk;
     exports ru.ifmo.rain.tebloev.arrayset;

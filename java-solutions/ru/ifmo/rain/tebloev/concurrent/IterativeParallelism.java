@@ -1,6 +1,7 @@
 package ru.ifmo.rain.tebloev.concurrent;
 
 import info.kgeorgiy.java.advanced.concurrent.AdvancedIP;
+import info.kgeorgiy.java.advanced.mapper.ParallelMapper;
 
 import java.util.*;
 import java.util.function.Function;
@@ -10,71 +11,25 @@ import java.util.function.Predicate;
  * Class that implements IterativeParallelism.
  */
 public class IterativeParallelism implements AdvancedIP {
-    @Override
-    public <T> T reduce(int threads, List<T> values, Monoid<T> monoid) throws InterruptedException {
-        return mapReduce(threads, values, x -> x, monoid);
+    private final ParallelMapper mapper;
+
+    public IterativeParallelism() {
+        mapper = null;
     }
 
-    @Override
-    public <T, R> R mapReduce(int threads, final List<T> values, final Function<T, R> lift, final Monoid<R> monoid) throws InterruptedException {
-        if (threads < 1) {
-            throw new IllegalArgumentException("invalid thread count");
-        }
-        threads = Math.min(threads, values.size());
-
-        int segmentSize = values.size() / threads;
-        int rest = values.size() % threads;
-        List<Thread> threadList = new ArrayList<>();
-        List<R> buffer = new ArrayList<>(Collections.nCopies(threads, null));
-
-        for (int i = 0, l = 0; i < threads; i++) {
-            final int idx = i;
-            final int from = l;
-            final int to = l + segmentSize + (i < rest ? 1 : 0);
-            l = to;
-
-            Thread thread = new Thread(
-                    () -> buffer.set(idx, values.subList(from, to).stream()
-                            .map(lift).reduce(monoid.getIdentity(), monoid.getOperator()))
-            );
-
-            thread.start();
-            threadList.add(thread);
-        }
-
-        R result = monoid.getIdentity();
-        InterruptedException collector = null;
-        for (int i = 0; i < threads; i++) {
-            try {
-                threadList.get(i).join();
-                result = monoid.getOperator().apply(result, buffer.get(i));
-            } catch (InterruptedException e) {
-                collector = collector == null ? new InterruptedException() : collector;
-                collector.addSuppressed(e);
-            }
-        }
-
-        if (collector != null) {
-            throw collector;
-        }
-
-        return result;
-    }
-
-    @Override
-    public String join(int threads, List<?> values) throws InterruptedException {
-        return mapReduce(threads, values, Object::toString, new Monoid<>("", (a, b) -> a + b));
+    public IterativeParallelism(ParallelMapper mapper) {
+        this.mapper = mapper;
     }
 
     /**
-     * Returns merge of two {@link List} objects. If first is modifiable, then second would be appended to it.
+     * Returns concat of two {@link List} objects. If first is modifiable, then second would be appended to it.
      * Otherwise new {@link LinkedList} is created from {@code left} contents, and {@code right} is appended to it.
      *
      * @param left  {@link List} object that contents would be prefix of result
      * @param right {@link List} object that contents would be suffix of result
      * @return merge of two {@link List} objects
      */
-    private <T> List<T> listMerge(final List<T> left, final List<T> right) {
+    private static <T> List<T> listConcat(final List<T> left, final List<T> right) {
         if (left == null && right == null) {
             return null;
         } else if (left == null || right == null) {
@@ -94,10 +49,69 @@ public class IterativeParallelism implements AdvancedIP {
     }
 
     @Override
+    public <T> T reduce(int threads, List<T> values, Monoid<T> monoid) throws InterruptedException {
+        return mapReduce(threads, values, Function.identity(), monoid);
+    }
+
+    @Override
+    public <T, R> R mapReduce(int threads, final List<T> values, final Function<T, R> lift, final Monoid<R> monoid) throws InterruptedException {
+        if (threads < 1) {
+            throw new IllegalArgumentException("Invalid thread count");
+        }
+        threads = Math.min(threads, values.size());
+
+        int segmentSize = threads != 0 ? values.size() / threads : 0;
+        int rest = values.size() % threads;
+
+        List<List<T>> parts = new ArrayList<>();
+        for (int i = 0, l = 0; i < threads; i++) {
+            int from = l;
+            int to = l + segmentSize + (i < rest ? 1 : 0);
+            l = to;
+
+            List<T> subList = values.subList(from, to);
+            parts.add(subList);
+        }
+
+        if (mapper != null) {
+            List<R> resultBuffer = mapper.map(
+                    element -> element.stream().map(lift).reduce(monoid.getIdentity(), monoid.getOperator()),
+                    parts
+            );
+
+            return resultBuffer.stream().reduce(monoid.getIdentity(), monoid.getOperator());
+        } else {
+            List<Thread> threadList = new ArrayList<>();
+            List<R> resultBuffer = new ArrayList<>(Collections.nCopies(threads, null));
+
+            for (int i = 0; i < threads; i++) {
+                final int segmentId = i;
+                Thread thread = new Thread(
+                        () -> resultBuffer.set(segmentId, parts.get(segmentId).stream()
+                                .map(lift).reduce(monoid.getIdentity(), monoid.getOperator()))
+                );
+                thread.start();
+                threadList.add(thread);
+            }
+
+            for (Thread thread : threadList) {
+                thread.join();
+            }
+
+            return resultBuffer.stream().reduce(monoid.getIdentity(), monoid.getOperator());
+        }
+    }
+
+    @Override
+    public String join(int threads, List<?> values) throws InterruptedException {
+        return mapReduce(threads, values, Object::toString, new Monoid<>("", (a, b) -> a + b));
+    }
+
+    @Override
     public <T> List<T> filter(int threads, List<? extends T> values, Predicate<? super T> predicate) throws InterruptedException {
         return mapReduce(threads, values,
                 x -> predicate.test(x) ? List.of(x) : null,
-                new Monoid<>(List.of(), this::listMerge)
+                new Monoid<>(List.of(), IterativeParallelism::listConcat)
         );
     }
 
@@ -105,13 +119,13 @@ public class IterativeParallelism implements AdvancedIP {
     public <T, U> List<U> map(int threads, List<? extends T> values, Function<? super T, ? extends U> f) throws InterruptedException {
         return mapReduce(threads, values,
                 x -> List.of(f.apply(x)),
-                new Monoid<>(List.of(), this::listMerge));
+                new Monoid<>(List.of(), IterativeParallelism::listConcat));
     }
 
     @Override
     public <T> T maximum(int threads, List<? extends T> values, Comparator<? super T> comparator) throws InterruptedException {
         if (values.isEmpty()) {
-            throw new NoSuchElementException("empty list");
+            throw new NoSuchElementException("Empty list");
         }
 
         return reduce(threads, values, new Monoid<>(null, (a, b) -> {
