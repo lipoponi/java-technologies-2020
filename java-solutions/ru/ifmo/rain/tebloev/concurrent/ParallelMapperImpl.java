@@ -45,6 +45,7 @@ public class ParallelMapperImpl implements ParallelMapper {
                 job.run();
             }
         } catch (InterruptedException ignored) {
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -84,13 +85,11 @@ public class ParallelMapperImpl implements ParallelMapper {
     public void close() {
         for (Thread thread : threadList) {
             thread.interrupt();
-        }
 
-        try {
-            for (Thread thread : threadList) {
+            try {
                 thread.join();
+            } catch (InterruptedException ignored) {
             }
-        } catch (InterruptedException ignored) {
         }
     }
 }
