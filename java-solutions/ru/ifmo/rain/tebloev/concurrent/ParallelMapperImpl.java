@@ -6,7 +6,7 @@ import java.util.*;
 import java.util.function.Function;
 
 /**
- * Mapper that applies map operation using variable amount of worker threads.
+ * Mapper that applies map operation using variable number of worker threads.
  *
  * @author Stanislav Tebloev
  */
@@ -15,9 +15,9 @@ public class ParallelMapperImpl implements ParallelMapper {
     private final List<Thread> threadList;
 
     /**
-     * Constructs ParallelMapperImpl with specified amount of worker threads.
+     * Constructs ParallelMapperImpl with specified number of worker threads.
      *
-     * @param threads amount of worker threads
+     * @param threads number of worker threads
      */
     public ParallelMapperImpl(int threads) {
         jobQueue = new LinkedList<>();
