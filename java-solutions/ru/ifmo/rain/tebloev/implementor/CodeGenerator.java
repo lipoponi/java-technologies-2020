@@ -223,7 +223,7 @@ class CodeGenerator {
         List<Class<?>> list = new ArrayList<>();
         list.add(token);
 
-        Set<Class<?>> visited = new HashSet<Class<?>>();
+        Set<Class<?>> visited = new HashSet<>();
 
         for (int i = 0; i < list.size(); i++) {
             Class<?> current = list.get(i);
