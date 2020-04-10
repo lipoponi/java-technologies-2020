@@ -5,7 +5,11 @@ import info.kgeorgiy.java.advanced.mapper.ParallelMapper;
 import java.util.*;
 import java.util.function.Function;
 
-
+/**
+ * Mapper that applies map operation using variable amount of worker threads.
+ *
+ * @author Stanislav Tebloev
+ */
 public class ParallelMapperImpl implements ParallelMapper {
     private final Queue<Runnable> jobQueue;
     private final List<Thread> threadList;

@@ -9,14 +9,24 @@ import java.util.function.Predicate;
 
 /**
  * Class that implements IterativeParallelism.
+ *
+ * @author Stanislav Tebloev
  */
 public class IterativeParallelism implements AdvancedIP {
     private final ParallelMapper mapper;
 
+    /**
+     * Constructs instance without mapper.
+     */
     public IterativeParallelism() {
         mapper = null;
     }
 
+    /**
+     * Constructs instance with specified mapper.
+     *
+     * @param mapper {@link ParallelMapper} instance
+     */
     public IterativeParallelism(ParallelMapper mapper) {
         this.mapper = mapper;
     }
