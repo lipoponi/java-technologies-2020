@@ -73,20 +73,20 @@ public class IterativeParallelism implements AdvancedIP {
         int segmentSize = threads != 0 ? values.size() / threads : 0;
         int rest = values.size() % threads;
 
-        List<List<T>> parts = new ArrayList<>();
+        List<List<T>> segments = new ArrayList<>();
         for (int i = 0, l = 0; i < threads; i++) {
             int from = l;
             int to = l + segmentSize + (i < rest ? 1 : 0);
             l = to;
 
             List<T> subList = values.subList(from, to);
-            parts.add(subList);
+            segments.add(subList);
         }
 
         if (mapper != null) {
             List<R> resultBuffer = mapper.map(
                     element -> element.stream().map(lift).reduce(monoid.getIdentity(), monoid.getOperator()),
-                    parts
+                    segments
             );
 
             return resultBuffer.stream().reduce(monoid.getIdentity(), monoid.getOperator());
@@ -97,7 +97,7 @@ public class IterativeParallelism implements AdvancedIP {
             for (int i = 0; i < threads; i++) {
                 final int segmentId = i;
                 Thread thread = new Thread(
-                        () -> resultBuffer.set(segmentId, parts.get(segmentId).stream()
+                        () -> resultBuffer.set(segmentId, segments.get(segmentId).stream()
                                 .map(lift).reduce(monoid.getIdentity(), monoid.getOperator()))
                 );
                 thread.start();
