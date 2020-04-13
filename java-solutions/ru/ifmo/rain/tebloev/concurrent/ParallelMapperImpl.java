@@ -24,13 +24,13 @@ public class ParallelMapperImpl implements ParallelMapper {
         threadList = new ArrayList<>();
 
         for (int i = 0; i < threads; i++) {
-            Thread thread = new Thread(this::workerLoop);
+            Thread thread = new Thread(this::handleJobs);
             thread.start();
             threadList.add(thread);
         }
     }
 
-    private void workerLoop() {
+    private void handleJobs() {
         try {
             while (!Thread.currentThread().isInterrupted()) {
                 Runnable job;
