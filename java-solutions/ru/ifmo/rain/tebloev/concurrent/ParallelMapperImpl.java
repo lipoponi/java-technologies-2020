@@ -11,6 +11,7 @@ import java.util.function.Function;
  * @author Stanislav Tebloev
  */
 public class ParallelMapperImpl implements ParallelMapper {
+    private boolean closed = false;
     private final Queue<Runnable> jobQueue;
     private final List<Thread> threadList;
 
@@ -51,19 +52,26 @@ public class ParallelMapperImpl implements ParallelMapper {
 
     @Override
     public <T, R> List<R> map(Function<? super T, ? extends R> f, List<? extends T> args) throws InterruptedException {
+        synchronized (this) {
+            if (closed) {
+                throw new UnsupportedOperationException("Mapper is closed");
+            }
+        }
+
         final List<T> argsArray = new ArrayList<>(args);
         final List<R> resultBuffer = new ArrayList<>(Collections.nCopies(args.size(), null));
-        final int[] counter = {0};
+        final int[] countDown = {args.size()};
 
         synchronized (jobQueue) {
             for (int i = 0; i < args.size(); i++) {
                 int index = i;
 
                 jobQueue.add(() -> {
-                    resultBuffer.set(index, f.apply(argsArray.get(index)));
-                    synchronized (counter) {
-                        if (++counter[0] == resultBuffer.size()) {
-                            counter.notify();
+                    R result = f.apply(argsArray.get(index));
+                    synchronized (countDown) {
+                        resultBuffer.set(index, result);
+                        if (--countDown[0] == 0) {
+                            countDown.notify();
                         }
                     }
                 });
@@ -72,9 +80,9 @@ public class ParallelMapperImpl implements ParallelMapper {
             jobQueue.notifyAll();
         }
 
-        while (counter[0] < args.size()) {
-            synchronized (counter) {
-                counter.wait();
+        synchronized (countDown) {
+            while (countDown[0] != 0) {
+                countDown.wait();
             }
         }
 
@@ -83,6 +91,10 @@ public class ParallelMapperImpl implements ParallelMapper {
 
     @Override
     public void close() {
+        synchronized (this) {
+            closed = true;
+        }
+
         for (Thread thread : threadList) {
             thread.interrupt();
 
