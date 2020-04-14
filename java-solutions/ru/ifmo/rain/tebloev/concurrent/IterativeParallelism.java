@@ -39,7 +39,7 @@ public class IterativeParallelism implements AdvancedIP {
      * @param right {@link List} object that contents would be suffix of result
      * @return merge of two {@link List} objects
      */
-    private static <T> List<T> listConcat(final List<T> left, final List<T> right) {
+    private static <T> List<T> concatenateLists(final List<T> left, final List<T> right) {
         if (left == null && right == null) {
             return null;
         } else if (left == null || right == null) {
@@ -134,7 +134,7 @@ public class IterativeParallelism implements AdvancedIP {
     public <T> List<T> filter(int threads, List<? extends T> values, Predicate<? super T> predicate) throws InterruptedException {
         return mapReduce(threads, values,
                 x -> predicate.test(x) ? List.of(x) : null,
-                new Monoid<>(List.of(), IterativeParallelism::listConcat)
+                new Monoid<>(List.of(), IterativeParallelism::concatenateLists)
         );
     }
 
@@ -142,7 +142,7 @@ public class IterativeParallelism implements AdvancedIP {
     public <T, U> List<U> map(int threads, List<? extends T> values, Function<? super T, ? extends U> f) throws InterruptedException {
         return mapReduce(threads, values,
                 x -> List.of(f.apply(x)),
-                new Monoid<>(List.of(), IterativeParallelism::listConcat));
+                new Monoid<>(List.of(), IterativeParallelism::concatenateLists));
     }
 
     @Override
