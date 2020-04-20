@@ -51,7 +51,7 @@ public class JarImplementor extends Implementor implements JarImpler {
         try {
             Path root;
             try {
-                root = Files.createTempDirectory(null);
+                root = Files.createTempDirectory(jarFile.toAbsolutePath().getParent(), "temp");
             } catch (IOException e) {
                 throw new ImplerException("cannot create temporary folder", e);
             }
