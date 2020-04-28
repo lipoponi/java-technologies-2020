@@ -3,6 +3,7 @@ package ru.ifmo.rain.tebloev.crawler;
 import info.kgeorgiy.java.advanced.crawler.*;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -37,36 +38,49 @@ public class WebCrawler implements Crawler {
         CountDownLatch downloadLatch = new CountDownLatch(layer.size());
         Queue<Future<List<String>>> extractFutures = new ConcurrentLinkedQueue<>();
 
-        layer.forEach(url -> downloadExecutor.execute(() -> {
+        layer.forEach(url -> {
             try {
-                Document document = downloadHostLimited(url);
-                downloaded.add(url);
+                Semaphore hostSemaphore = hostSemaphores.computeIfAbsent(URLUtils.getHost(url), key -> new Semaphore(perHost));
+                hostSemaphore.acquire();
 
-                if (extractLinks) {
-                    extractFutures.add(extractExecutor.submit(() -> {
-                        try {
-                            return document.extractLinks();
-                        } catch (IOException e) {
-                            IOException presentException = errors.putIfAbsent(url, e);
-                            if (presentException != null) {
-                                presentException.addSuppressed(e);
-                            }
+                downloadExecutor.execute(() -> {
+                    try {
+                        Document document = this.downloader.download(url);
+                        downloaded.add(url);
+
+                        if (extractLinks) {
+                            extractFutures.add(extractExecutor.submit(() -> {
+                                try {
+                                    return document.extractLinks();
+                                } catch (IOException e) {
+                                    IOException presentException = errors.putIfAbsent(url, e);
+                                    if (presentException != null) {
+                                        presentException.addSuppressed(e);
+                                    }
+                                }
+
+                                return List.of();
+                            }));
                         }
-
-                        return List.of();
-                    }));
-                }
-            } catch (IOException e) {
+                    } catch (IOException e) {
+                        IOException presentException = errors.putIfAbsent(url, e);
+                        if (presentException != null) {
+                            presentException.addSuppressed(e);
+                        }
+                    } finally {
+                        downloadLatch.countDown();
+                        hostSemaphore.release();
+                    }
+                });
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (MalformedURLException e) {
                 IOException presentException = errors.putIfAbsent(url, e);
                 if (presentException != null) {
                     presentException.addSuppressed(e);
                 }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            } finally {
-                downloadLatch.countDown();
             }
-        }));
+        });
 
         try {
             downloadLatch.await();
