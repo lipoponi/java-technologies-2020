@@ -125,4 +125,76 @@ public class WebCrawler implements Crawler {
         shutdownAndAwaitTermination(downloadExecutor);
         shutdownAndAwaitTermination(extractExecutor);
     }
+
+    private static class Validator {
+        public static void notNull(String value) {
+            if (value == null) {
+                throw new IllegalArgumentException("Null argument");
+            }
+        }
+
+        public static void isNumber(String value) {
+            notNull(value);
+
+            try {
+                Integer.parseInt(value);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Invalid number format", e);
+            }
+        }
+    }
+
+    private static void handleException(String msg) {
+        System.err.println(msg);
+        System.exit(1);
+    }
+
+    public static void main(String[] args) {
+        try {
+            if (args == null || args.length < 1 || 5 < args.length) {
+                throw new IllegalArgumentException();
+            }
+
+            String[] preprocessedArgs = new String[5];
+            Validator.notNull(args[0]);
+            preprocessedArgs[0] = args[0];
+            preprocessedArgs[1] = "2";
+            preprocessedArgs[2] = "5";
+            preprocessedArgs[3] = "5";
+            preprocessedArgs[4] = "5";
+
+            for (int i = 1; i < args.length; i++) {
+                Validator.isNumber(args[i]);
+                preprocessedArgs[i] = args[i];
+            }
+
+            String url = preprocessedArgs[0];
+            int depth = Integer.parseInt(preprocessedArgs[1]);
+            int downloaderCount = Integer.parseInt(preprocessedArgs[2]);
+            int extractorCount = Integer.parseInt(preprocessedArgs[3]);
+            int perHost = Integer.parseInt(preprocessedArgs[4]);
+
+            try {
+                Downloader downloader = new CachingDownloader();
+                try (Crawler crawler = new WebCrawler(downloader, downloaderCount, extractorCount, perHost)) {
+                    Result result = crawler.download(url, depth);
+
+                    System.out.println("Downloaded:");
+                    for (String downloadedUrl : result.getDownloaded()) {
+                        System.out.println(downloadedUrl);
+                    }
+                    System.out.println();
+
+                    System.out.println("Errors:");
+                    for (String failedUrl : result.getErrors().keySet()) {
+                        System.out.println(failedUrl);
+                    }
+                }
+            } catch (IOException e) {
+                handleException("Unable to create downloader");
+            }
+        } catch (IllegalArgumentException e) {
+            handleException("Usage: WebCrawler url [depth [downloads [extractors [perHost]]]]");
+        }
+    }
 }
