@@ -79,8 +79,8 @@ public class WebCrawler implements Crawler {
                     .collect(Collectors.toList());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-        } catch (ExecutionException e) {
-
+        } catch (ExecutionException ignored) {
+            assert false : "Unreachable";
         }
 
         return List.of();
