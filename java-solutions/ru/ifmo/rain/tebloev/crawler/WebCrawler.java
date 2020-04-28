@@ -22,7 +22,7 @@ public class WebCrawler implements Crawler {
         this.hostSemaphores = new ConcurrentHashMap<>();
     }
 
-    private Document downloadWithWait(String url) throws IOException, InterruptedException {
+    private Document downloadHostLimited(String url) throws IOException, InterruptedException {
         Semaphore hostSemaphore = hostSemaphores.computeIfAbsent(URLUtils.getHost(url), key -> new Semaphore(perHost));
 
         hostSemaphore.acquire();
@@ -39,21 +39,23 @@ public class WebCrawler implements Crawler {
 
         layer.forEach(url -> downloadExecutor.execute(() -> {
             try {
-                Document document = downloadWithWait(url);
+                Document document = downloadHostLimited(url);
                 downloaded.add(url);
 
-                extractFutures.add(extractExecutor.submit(() -> {
-                    try {
-                        return document.extractLinks();
-                    } catch (IOException e) {
-                        IOException presentException = errors.putIfAbsent(url, e);
-                        if (presentException != null) {
-                            presentException.addSuppressed(e);
+                if (extractLinks) {
+                    extractFutures.add(extractExecutor.submit(() -> {
+                        try {
+                            return document.extractLinks();
+                        } catch (IOException e) {
+                            IOException presentException = errors.putIfAbsent(url, e);
+                            if (presentException != null) {
+                                presentException.addSuppressed(e);
+                            }
                         }
-                    }
 
-                    return List.of();
-                }));
+                        return List.of();
+                    }));
+                }
             } catch (IOException e) {
                 IOException presentException = errors.putIfAbsent(url, e);
                 if (presentException != null) {
@@ -68,11 +70,6 @@ public class WebCrawler implements Crawler {
 
         try {
             downloadLatch.await();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-        try {
             List<List<String>> extractResults = new ArrayList<>();
             for (Future<List<String>> future : extractFutures) {
                 extractResults.add(future.get());
@@ -102,7 +99,7 @@ public class WebCrawler implements Crawler {
 
         seen.add(startUrl);
 
-        for (int i = 1; i <= depth; i++) {
+        for (int i = 1; i <= depth && !activeLayer.isEmpty(); i++) {
             activeLayer = processLayer(activeLayer, downloaded, errors, seen, i < depth);
         }
 
