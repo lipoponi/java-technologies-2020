@@ -13,25 +13,46 @@ public class WebCrawler implements Crawler {
     private final ExecutorService downloadExecutor;
     private final ExecutorService extractExecutor;
     private final int perHost;
-    private final ConcurrentMap<String, Semaphore> hostSemaphores;
+    private final ConcurrentMap<String, Host> hostMap;
 
     public WebCrawler(Downloader downloader, int downloaderCount, int extractorCount, int perHost) {
         this.downloader = downloader;
         this.downloadExecutor = Executors.newFixedThreadPool(downloaderCount);
         this.extractExecutor = Executors.newFixedThreadPool(extractorCount);
         this.perHost = perHost;
-        this.hostSemaphores = new ConcurrentHashMap<>();
+        this.hostMap = new ConcurrentHashMap<>();
     }
 
-    private Document downloadHostLimited(String url) throws IOException, InterruptedException {
-        Semaphore hostSemaphore = hostSemaphores.computeIfAbsent(URLUtils.getHost(url), key -> new Semaphore(perHost));
+    private class Host {
+        private final BlockingQueue<Runnable> waiting = new LinkedBlockingQueue<>();
+        public final Semaphore semaphore = new Semaphore(perHost);
 
-        hostSemaphore.acquire();
-        try {
-            return this.downloader.download(url);
-        } finally {
-            hostSemaphore.release();
+        public synchronized void addJob(Runnable job) {
+            if (semaphore.tryAcquire()) {
+                downloadExecutor.execute(job);
+            } else {
+                waiting.add(job);
+            }
         }
+
+        public synchronized void startOneWaiting() {
+            Runnable job = waiting.poll();
+            if (job == null) {
+                return;
+            }
+
+            try {
+                semaphore.acquire();
+                downloadExecutor.execute(job);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    private static <V extends Exception> V mergeWithSuppression(V a, V b) {
+        a.addSuppressed(b);
+        return a;
     }
 
     private List<String> processLayer(List<String> layer, List<String> downloaded, ConcurrentMap<String, IOException> errors, Set<String> seen, boolean extractLinks) {
@@ -40,10 +61,9 @@ public class WebCrawler implements Crawler {
 
         layer.forEach(url -> {
             try {
-                Semaphore hostSemaphore = hostSemaphores.computeIfAbsent(URLUtils.getHost(url), key -> new Semaphore(perHost));
-                hostSemaphore.acquire();
+                Host host = hostMap.computeIfAbsent(URLUtils.getHost(url), (key) -> new Host());
 
-                downloadExecutor.execute(() -> {
+                host.addJob(() -> {
                     try {
                         Document document = this.downloader.download(url);
                         downloaded.add(url);
@@ -53,32 +73,22 @@ public class WebCrawler implements Crawler {
                                 try {
                                     return document.extractLinks();
                                 } catch (IOException e) {
-                                    IOException presentException = errors.putIfAbsent(url, e);
-                                    if (presentException != null) {
-                                        presentException.addSuppressed(e);
-                                    }
+                                    errors.merge(url, e, WebCrawler::mergeWithSuppression);
                                 }
 
                                 return List.of();
                             }));
                         }
                     } catch (IOException e) {
-                        IOException presentException = errors.putIfAbsent(url, e);
-                        if (presentException != null) {
-                            presentException.addSuppressed(e);
-                        }
+                        errors.merge(url, e, WebCrawler::mergeWithSuppression);
                     } finally {
                         downloadLatch.countDown();
-                        hostSemaphore.release();
+                        host.semaphore.release();
+                        host.startOneWaiting();
                     }
                 });
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
             } catch (MalformedURLException e) {
-                IOException presentException = errors.putIfAbsent(url, e);
-                if (presentException != null) {
-                    presentException.addSuppressed(e);
-                }
+                errors.merge(url, e, WebCrawler::mergeWithSuppression);
             }
         });
 
