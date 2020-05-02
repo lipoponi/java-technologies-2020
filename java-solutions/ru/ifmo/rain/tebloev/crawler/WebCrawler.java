@@ -19,7 +19,7 @@ public class WebCrawler implements Crawler {
         private final BlockingQueue<Runnable> waiting = new LinkedBlockingQueue<>();
         public final Semaphore semaphore = new Semaphore(perHost);
 
-        public synchronized void addJob(Runnable job) {
+        public void addJob(Runnable job) {
             if (semaphore.tryAcquire()) {
                 downloadExecutor.execute(job);
             } else {
@@ -27,7 +27,7 @@ public class WebCrawler implements Crawler {
             }
         }
 
-        public synchronized void startOneWaiting() {
+        public void startOneWaiting() {
             Runnable job = waiting.poll();
             if (job == null) {
                 return;
