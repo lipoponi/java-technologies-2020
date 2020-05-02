@@ -158,7 +158,7 @@ public class WebCrawler implements Crawler {
         }
     }
 
-    private static void handleException(String msg) {
+    private static void printError(String msg) {
         System.err.println(msg);
         System.exit(1);
     }
@@ -169,8 +169,8 @@ public class WebCrawler implements Crawler {
                 throw new IllegalArgumentException();
             }
 
-            String[] preprocessedArgs = new String[5];
             Validator.notNull(args[0]);
+            String[] preprocessedArgs = new String[5];
             preprocessedArgs[0] = args[0];
             preprocessedArgs[1] = "2";
             preprocessedArgs[2] = "5";
@@ -205,10 +205,10 @@ public class WebCrawler implements Crawler {
                     }
                 }
             } catch (IOException e) {
-                handleException("Unable to create downloader");
+                printError("Unable to create downloader");
             }
         } catch (IllegalArgumentException e) {
-            handleException("Usage: WebCrawler url [depth [downloads [extractors [perHost]]]]");
+            printError("Usage: WebCrawler url [depth [downloads [extractors [perHost]]]]");
         }
     }
 }
