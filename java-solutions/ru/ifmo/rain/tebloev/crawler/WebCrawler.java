@@ -17,9 +17,9 @@ public class WebCrawler implements Crawler {
 
     private class Host {
         private final BlockingQueue<Runnable> waiting = new LinkedBlockingQueue<>();
-        public final Semaphore semaphore = new Semaphore(perHost);
+        private final Semaphore semaphore = new Semaphore(perHost);
 
-        public void addJob(Runnable job) {
+        private void addJob(Runnable job) {
             if (semaphore.tryAcquire()) {
                 downloadExecutor.execute(job);
             } else {
@@ -27,7 +27,7 @@ public class WebCrawler implements Crawler {
             }
         }
 
-        public void startOneWaiting() {
+        private void startOneWaiting() {
             Runnable job = waiting.poll();
             if (job == null) {
                 return;
@@ -43,13 +43,13 @@ public class WebCrawler implements Crawler {
     }
 
     private static class Validator {
-        public static void notNull(String value) {
+        private static void notNull(String value) {
             if (value == null) {
                 throw new IllegalArgumentException("Null argument");
             }
         }
 
-        public static void isNumber(String value) {
+        private static void isNumber(String value) {
             notNull(value);
 
             try {
@@ -128,7 +128,8 @@ public class WebCrawler implements Crawler {
     }
 
 
-    private List<String> processLayer(List<String> layer, List<String> downloaded, ConcurrentMap<String, IOException> errors, Set<String> seen, boolean extractLinks) {
+    private List<String> processLayer(List<String> layer, List<String> downloaded, ConcurrentMap<String, IOException> errors,
+                                      Set<String> seen, boolean extractLinks) {
         CountDownLatch downloadLatch = new CountDownLatch(layer.size());
         Queue<Future<List<String>>> extractFutures = new ConcurrentLinkedQueue<>();
 
