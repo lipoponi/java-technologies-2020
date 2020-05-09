@@ -10,16 +10,15 @@ import java.util.concurrent.TimeUnit;
 class Util {
     static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
     static final int DEFAULT_BUFFER_LENGTH = 1024;
+    static final int AWAIT_TERMINATION_TIMEOUT_MS = 500;
 
     static void shutdownAndAwaitTermination(ExecutorService executor) {
         executor.shutdown();
         try {
-            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+            if (!executor.awaitTermination(AWAIT_TERMINATION_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
                 executor.shutdownNow();
-                if (!executor.awaitTermination(60, TimeUnit.SECONDS))
-                    System.err.println("Pool did not terminate");
             }
-        } catch (InterruptedException ie) {
+        } catch (InterruptedException ignored) {
             executor.shutdownNow();
             Thread.currentThread().interrupt();
         }
