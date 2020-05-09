@@ -3,10 +3,7 @@ package ru.ifmo.rain.tebloev.hello;
 import info.kgeorgiy.java.advanced.hello.HelloClient;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
+import java.net.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -47,7 +44,7 @@ public class HelloUDPClient implements HelloClient {
                         }
                     }
                 }
-            } catch (IOException ignored) {
+            } catch (SocketException ignored) {
             } finally {
                 senderLatch.countDown();
             }
