@@ -14,8 +14,8 @@ public class HelloUDPClient implements HelloClient {
     private static final int SOCKET_TIMEOUT_MS = 100;
     private static final int ATTEMPTS_PER_REQUEST = 100;
 
-    private static boolean isResponseCorrect(String response, int threadId, int requestId) {
-        String regex = String.format("^\\D*%d\\D+%d\\D*$", threadId, requestId);
+    private static boolean isResponseCorrect(String response, int threadIndex, int requestIndex) {
+        String regex = String.format("^\\D*%d\\D+%d\\D*$", threadIndex, requestIndex);
         return Pattern.matches(regex, response);
     }
 
@@ -31,8 +31,8 @@ public class HelloUDPClient implements HelloClient {
                 socket.setSoTimeout(SOCKET_TIMEOUT_MS);
                 socket.connect(serverAddress);
 
-                IntStream.range(0, requests).forEach(requestId -> {
-                    String request = String.format("%s%d_%d", prefix, threadIndex, requestId);
+                IntStream.range(0, requests).forEach(requestIndex -> {
+                    String request = String.format("%s%d_%d", prefix, threadIndex, requestIndex);
                     DatagramPacket sendPacket = Util.createDefaultSendPacket(serverAddress, request);
 
                     for (int j = 0; j < ATTEMPTS_PER_REQUEST; j++) {
@@ -42,7 +42,7 @@ public class HelloUDPClient implements HelloClient {
                             socket.receive(receivePacket);
                             String response = Util.extractString(receivePacket);
 
-                            if (isResponseCorrect(response, threadIndex, requestId)) {
+                            if (isResponseCorrect(response, threadIndex, requestIndex)) {
                                 System.out.println(String.format("%s%n%s", request, response));
                                 break;
                             }
