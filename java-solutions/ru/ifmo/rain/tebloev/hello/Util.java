@@ -8,9 +8,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 class Util {
-    static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
-    static final int DEFAULT_BUFFER_LENGTH = 1024;
-    static final int AWAIT_TERMINATION_TIMEOUT_MS = 500;
+    private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
+    private static final int DEFAULT_BUFFER_LENGTH = 1024;
+    private static final int AWAIT_TERMINATION_TIMEOUT_MS = 500;
 
     static void shutdownAndAwaitTermination(ExecutorService executor) {
         executor.shutdown();

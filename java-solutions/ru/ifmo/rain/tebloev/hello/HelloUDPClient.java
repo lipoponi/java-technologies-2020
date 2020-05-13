@@ -14,7 +14,7 @@ public class HelloUDPClient implements HelloClient {
     private static final int SOCKET_TIMEOUT_MS = 100;
     private static final int ATTEMPTS_PER_REQUEST = 100;
 
-    private static boolean checkResponseCorrectness(String response, int threadId, int requestId) {
+    private static boolean isResponseCorrect(String response, int threadId, int requestId) {
         String regex = String.format("^\\D*%d\\D+%d\\D*$", threadId, requestId);
         return Pattern.matches(regex, response);
     }
@@ -26,13 +26,13 @@ public class HelloUDPClient implements HelloClient {
         ExecutorService senderExecutor = Executors.newFixedThreadPool(threads);
         CountDownLatch senderLatch = new CountDownLatch(threads);
 
-        IntStream.range(0, threads).forEach(threadId -> senderExecutor.execute(() -> {
+        IntStream.range(0, threads).forEach(threadIndex -> senderExecutor.execute(() -> {
             try (DatagramSocket socket = new DatagramSocket(null)) {
                 socket.setSoTimeout(SOCKET_TIMEOUT_MS);
                 socket.connect(serverAddress);
 
                 IntStream.range(0, requests).forEach(requestId -> {
-                    String request = String.format("%s%d_%d", prefix, threadId, requestId);
+                    String request = String.format("%s%d_%d", prefix, threadIndex, requestId);
                     DatagramPacket sendPacket = Util.createDefaultSendPacket(serverAddress, request);
 
                     for (int j = 0; j < ATTEMPTS_PER_REQUEST; j++) {
@@ -42,17 +42,17 @@ public class HelloUDPClient implements HelloClient {
                             socket.receive(receivePacket);
                             String response = Util.extractString(receivePacket);
 
-                            if (checkResponseCorrectness(response, threadId, requestId)) {
+                            if (isResponseCorrect(response, threadIndex, requestId)) {
                                 System.out.println(String.format("%s%n%s", request, response));
                                 break;
                             }
                         } catch (IOException e) {
-                            Util.handleThreadException(threadId, e);
+                            Util.handleThreadException(threadIndex, e);
                         }
                     }
                 });
             } catch (SocketException e) {
-                Util.handleThreadException(threadId, new IOException("Cannot open socket", e));
+                Util.handleThreadException(threadIndex, new IOException("Cannot open socket", e));
             } finally {
                 senderLatch.countDown();
             }
