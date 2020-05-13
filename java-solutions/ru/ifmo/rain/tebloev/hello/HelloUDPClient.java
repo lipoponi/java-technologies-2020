@@ -7,11 +7,17 @@ import java.net.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 public class HelloUDPClient implements HelloClient {
     private static final int SOCKET_TIMEOUT_MS = 100;
     private static final int ATTEMPTS_PER_REQUEST = 100;
+
+    private static boolean checkResponseCorrectness(String response, int threadId, int requestId) {
+        String regex = String.format("^\\D*%d\\D+%d\\D*$", threadId, requestId);
+        return Pattern.matches(regex, response);
+    }
 
     @Override
     public void run(String host, int port, String prefix, int threads, int requests) {
@@ -25,7 +31,7 @@ public class HelloUDPClient implements HelloClient {
                 socket.setSoTimeout(SOCKET_TIMEOUT_MS);
                 socket.connect(serverAddress);
 
-                for (int requestId = 0; requestId < requests; requestId++) {
+                IntStream.range(0, requests).forEach(requestId -> {
                     String request = String.format("%s%d_%d", prefix, threadId, requestId);
                     DatagramPacket sendPacket = Util.createDefaultSendPacket(serverAddress, request);
 
@@ -36,14 +42,14 @@ public class HelloUDPClient implements HelloClient {
                             socket.receive(receivePacket);
                             String response = Util.extractString(receivePacket);
 
-                            if (response.contains(request)) {
+                            if (checkResponseCorrectness(response, threadId, requestId)) {
                                 System.out.println(String.format("%s%n%s", request, response));
                                 break;
                             }
                         } catch (IOException ignored) {
                         }
                     }
-                }
+                });
             } catch (SocketException ignored) {
             } finally {
                 senderLatch.countDown();
