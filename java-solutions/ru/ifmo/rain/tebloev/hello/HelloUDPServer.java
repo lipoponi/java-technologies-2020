@@ -57,6 +57,10 @@ public class HelloUDPServer implements HelloServer {
 
     @Override
     public synchronized void close() {
+        if (socket == null || receiveExecutor == null || executorLatch == null) {
+            return;
+        }
+
         socket.close();
         Util.shutdownAndAwaitTermination(receiveExecutor);
 
