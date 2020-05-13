@@ -45,7 +45,8 @@ public class HelloUDPServer implements HelloServer {
 
                         String response = String.format("Hello, %s", request);
                         socket.send(Util.createDefaultSendPacket(receivePacket.getSocketAddress(), response));
-                    } catch (IOException ignored) {
+                    } catch (IOException e) {
+                        Util.handleThreadException(threadId, e);
                     }
                 }
             } finally {

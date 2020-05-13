@@ -46,11 +46,13 @@ public class HelloUDPClient implements HelloClient {
                                 System.out.println(String.format("%s%n%s", request, response));
                                 break;
                             }
-                        } catch (IOException ignored) {
+                        } catch (IOException e) {
+                            Util.handleThreadException(threadId, e);
                         }
                     }
                 });
-            } catch (SocketException ignored) {
+            } catch (SocketException e) {
+                Util.handleThreadException(threadId, new IOException("Cannot open socket", e));
             } finally {
                 senderLatch.countDown();
             }

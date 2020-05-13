@@ -37,4 +37,13 @@ class Util {
     static String extractString(DatagramPacket packet) {
         return new String(packet.getData(), packet.getOffset(), packet.getLength(), DEFAULT_CHARSET);
     }
+
+    static void handleException(Exception e) {
+        System.err.println(e.getMessage());
+    }
+
+    static void handleThreadException(int threadId, Exception e) {
+        String msg = String.format("Exception in thread '%d': %s", threadId, e.getMessage());
+        handleException(new Exception(msg, e));
+    }
 }
