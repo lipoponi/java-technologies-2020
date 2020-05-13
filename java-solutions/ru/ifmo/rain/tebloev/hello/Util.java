@@ -9,7 +9,6 @@ import java.util.concurrent.TimeUnit;
 
 class Util {
     private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
-    private static final int DEFAULT_BUFFER_LENGTH = 1024;
     private static final int AWAIT_TERMINATION_TIMEOUT_MS = 500;
 
     static void shutdownAndAwaitTermination(ExecutorService executor) {
@@ -24,8 +23,8 @@ class Util {
         }
     }
 
-    static DatagramPacket createDefaultReceivePacket() {
-        byte[] buffer = new byte[DEFAULT_BUFFER_LENGTH];
+    static DatagramPacket createDefaultReceivePacket(int bufferSize) {
+        byte[] buffer = new byte[bufferSize];
         return new DatagramPacket(buffer, buffer.length);
     }
 

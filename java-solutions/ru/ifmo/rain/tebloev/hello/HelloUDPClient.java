@@ -38,7 +38,7 @@ public class HelloUDPClient implements HelloClient {
                     for (int j = 0; j < ATTEMPTS_PER_REQUEST; j++) {
                         try {
                             socket.send(sendPacket);
-                            DatagramPacket receivePacket = Util.createDefaultReceivePacket();
+                            DatagramPacket receivePacket = Util.createDefaultReceivePacket(socket.getReceiveBufferSize());
                             socket.receive(receivePacket);
                             String response = Util.extractString(receivePacket);
 
