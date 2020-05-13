@@ -39,7 +39,7 @@ public class HelloUDPServer implements HelloServer {
             try {
                 while (!Thread.currentThread().isInterrupted() && !socket.isClosed()) {
                     try {
-                        DatagramPacket receivePacket = Util.createDefaultReceivePacket();
+                        DatagramPacket receivePacket = Util.createDefaultReceivePacket(socket.getReceiveBufferSize());
                         socket.receive(receivePacket);
                         String request = Util.extractString(receivePacket);
 
