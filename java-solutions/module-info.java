@@ -4,6 +4,7 @@
  */
 module java.solutions {
     requires java.compiler;
+    requires java.rmi;
     requires info.kgeorgiy.java.advanced.walk;
     requires info.kgeorgiy.java.advanced.arrayset;
     requires info.kgeorgiy.java.advanced.student;
