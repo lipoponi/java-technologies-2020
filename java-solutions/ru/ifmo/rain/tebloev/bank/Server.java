@@ -1,24 +1,70 @@
 package ru.ifmo.rain.tebloev.bank;
 
-import java.net.MalformedURLException;
-import java.rmi.Naming;
+import java.io.Closeable;
+import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Server {
-    private final static int PORT = 8888;
+public class Server implements Closeable {
+    private final static int DEFAULT_PORT = 1099;
+
+    private final AtomicBoolean started = new AtomicBoolean(false);
+    private final Queue<Remote> exported = new ConcurrentLinkedQueue<>();
+    private int port;
 
     public static void main(final String... args) {
-        final Bank bank = new RemoteBank(PORT);
-        try {
-            UnicastRemoteObject.exportObject(bank, PORT);
-            Naming.rebind("//localhost/bank", bank);
-        } catch (final RemoteException e) {
-            System.out.println("Cannot export object: " + e.getMessage());
-            e.printStackTrace();
-        } catch (final MalformedURLException e) {
-            System.out.println("Malformed URL");
+        Server server = new Server();
+        server.start(DEFAULT_PORT);
+
+        Util.log("Server started");
+
+        Runtime.getRuntime().addShutdownHook(new Thread(server::close));
+    }
+
+    private void export(Remote obj) throws RemoteException {
+        if (!started.get()) {
+            throw new UnsupportedOperationException("Server needs to be started");
         }
-        System.out.println("Server started");
+
+        UnicastRemoteObject.exportObject(obj, port);
+        exported.add(obj);
+    }
+
+    public synchronized void start(int port) {
+        if (started.getAndSet(true)) {
+            throw new UnsupportedOperationException("Server already started");
+        }
+
+        this.port = port;
+
+        try {
+            Registry registry = LocateRegistry.createRegistry(port);
+            exported.add(registry);
+
+            try {
+                RemoteBank bank = new RemoteBank(this::export);
+                export(bank);
+
+                registry.rebind("//localhost/bank", bank);
+            } catch (RemoteException e) {
+                Util.handleException("Unable to create bank", e);
+            }
+        } catch (RemoteException e) {
+            Util.handleException("Unable to create RMI registry", e);
+        }
+    }
+
+    public synchronized void close() {
+        if (!started.getAndSet(false)) {
+            throw new UnsupportedOperationException("Server isn't running");
+        }
+
+        exported.forEach(Util::forcedUnexport);
+        exported.clear();
     }
 }
