@@ -50,7 +50,7 @@ public class Server implements Closeable {
                 RemoteBank bank = new RemoteBank(this::export);
                 export(bank);
 
-                registry.rebind("//localhost/bank", bank);
+                registry.rebind("bank", bank);
             } catch (RemoteException e) {
                 Util.handleException("Unable to create bank", e);
             }

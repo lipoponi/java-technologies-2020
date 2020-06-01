@@ -16,7 +16,11 @@ class Util {
         System.out.println(String.format("[LOG] %s", msg));
     }
 
+    static void handleException(String msg) {
+        System.err.println(String.format("[ERR] %s", msg));
+    }
+
     static void handleException(String msg, Exception e) {
-        System.err.println(String.format("%s%ncaused by %s", msg, e));
+        handleException(String.format("%s%ncaused by %s", msg, e));
     }
 }
