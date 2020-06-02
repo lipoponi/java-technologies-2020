@@ -1,6 +1,8 @@
-package ru.ifmo.rain.tebloev.bank;
+package ru.ifmo.rain.tebloev.bank.server;
 
-public final class LocalPerson extends AbstractPerson {
+import ru.ifmo.rain.tebloev.bank.common.Account;
+
+final class LocalPerson extends AbstractPerson {
     LocalPerson(AbstractPerson person) {
         super(person);
     }

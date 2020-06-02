@@ -1,4 +1,4 @@
-package ru.ifmo.rain.tebloev.bank;
+package ru.ifmo.rain.tebloev.bank.common;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -8,7 +8,7 @@ public interface Bank extends Remote {
      * Creates a new account with specified identifier if it is not already exists.
      *
      * @param id account id
-     * @return created or existing account.
+     * @return created account or {@code null} if already exists.
      */
     Account createAccount(String id) throws RemoteException;
 
@@ -21,12 +21,12 @@ public interface Bank extends Remote {
     Account getAccount(String id) throws RemoteException;
 
     /**
-     * Creates a new person with specified data or returns existing one.
+     * Creates a new person with specified data.
      *
      * @param firstName First name of person
      * @param lastName  Last name of person
      * @param passport  Unique identification number
-     * @return created or existing person
+     * @return created person or {@code null} if already exists.
      */
     Person createPerson(String firstName, String lastName, String passport) throws RemoteException;
 

@@ -1,26 +1,26 @@
-package ru.ifmo.rain.tebloev.bank;
+package ru.ifmo.rain.tebloev.bank.common;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-class Util {
-    static void forcedUnexport(Remote remote) {
+public class Util {
+    public static void forcedUnexport(Remote remote) {
         try {
             UnicastRemoteObject.unexportObject(remote, true);
         } catch (RemoteException ignored) {
         }
     }
 
-    static void log(String msg) {
+    public static void log(String msg) {
         System.out.println(String.format("[LOG] %s", msg));
     }
 
-    static void handleException(String msg) {
+    public static void handleException(String msg) {
         System.err.println(String.format("[ERR] %s", msg));
     }
 
-    static void handleException(String msg, Exception e) {
+    public static void handleException(String msg, Exception e) {
         handleException(String.format("%s%ncaused by %s", msg, e));
     }
 }

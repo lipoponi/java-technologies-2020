@@ -1,4 +1,4 @@
-package ru.ifmo.rain.tebloev.bank;
+package ru.ifmo.rain.tebloev.bank.server;
 
 @FunctionalInterface
 interface CheckedConsumer<T, E extends Exception> {

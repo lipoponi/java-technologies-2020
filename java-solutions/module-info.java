@@ -22,5 +22,8 @@ module java.solutions {
     exports ru.ifmo.rain.tebloev.concurrent;
     exports ru.ifmo.rain.tebloev.crawler;
     exports ru.ifmo.rain.tebloev.hello;
-    exports ru.ifmo.rain.tebloev.bank;
+    exports ru.ifmo.rain.tebloev.bank.common to java.rmi;
+    exports ru.ifmo.rain.tebloev.bank.server;
+    exports ru.ifmo.rain.tebloev.bank.client;
+    exports ru.ifmo.rain.tebloev.bank.test;
 }

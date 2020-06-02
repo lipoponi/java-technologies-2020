@@ -1,4 +1,9 @@
-package ru.ifmo.rain.tebloev.bank;
+package ru.ifmo.rain.tebloev.bank.client;
+
+import ru.ifmo.rain.tebloev.bank.common.Account;
+import ru.ifmo.rain.tebloev.bank.common.Bank;
+import ru.ifmo.rain.tebloev.bank.common.Person;
+import ru.ifmo.rain.tebloev.bank.common.Util;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -39,8 +44,15 @@ public class Client {
         String subId = args[3];
         int change = Integer.parseInt(args[4]);
 
-        Person person = bank.createPerson(firstName, lastName, passport);
-        Account account = person.createAccount(subId);
+        Person person = bank.getPerson(passport, true);
+        if (person == null) {
+            person = bank.createPerson(firstName, lastName, passport);
+        }
+
+        Account account = person.getAccount(subId);
+        if (account == null) {
+            account = person.createAccount(subId);
+        }
 
         Util.log("Account id: " + account.getId());
         Util.log("Money: " + account.getAmount());

@@ -1,4 +1,4 @@
-package ru.ifmo.rain.tebloev.bank;
+package ru.ifmo.rain.tebloev.bank.common;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;

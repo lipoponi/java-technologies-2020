@@ -1,8 +1,11 @@
-package ru.ifmo.rain.tebloev.bank;
+package ru.ifmo.rain.tebloev.bank.server;
+
+import ru.ifmo.rain.tebloev.bank.common.Account;
+import ru.ifmo.rain.tebloev.bank.common.Util;
 
 import java.io.Serializable;
 
-public final class CommonAccount implements Account, Serializable {
+final class CommonAccount implements Account, Serializable {
     private final String id;
     private int amount = 0;
 

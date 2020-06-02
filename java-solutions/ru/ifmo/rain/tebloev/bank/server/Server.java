@@ -1,4 +1,7 @@
-package ru.ifmo.rain.tebloev.bank;
+package ru.ifmo.rain.tebloev.bank.server;
+
+import ru.ifmo.rain.tebloev.bank.common.Bank;
+import ru.ifmo.rain.tebloev.bank.common.Util;
 
 import java.io.Closeable;
 import java.rmi.Remote;

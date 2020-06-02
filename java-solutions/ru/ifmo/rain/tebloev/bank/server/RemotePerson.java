@@ -1,8 +1,10 @@
-package ru.ifmo.rain.tebloev.bank;
+package ru.ifmo.rain.tebloev.bank.server;
+
+import ru.ifmo.rain.tebloev.bank.common.Account;
 
 import java.rmi.RemoteException;
 
-public final class RemotePerson extends AbstractPerson {
+final class RemotePerson extends AbstractPerson {
     private final transient RemoteBank bank;
 
     RemotePerson(RemoteBank bank, String firstName, String lastName, String passport) {

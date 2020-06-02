@@ -1,11 +1,15 @@
-package ru.ifmo.rain.tebloev.bank;
+package ru.ifmo.rain.tebloev.bank.server;
+
+import ru.ifmo.rain.tebloev.bank.common.Bank;
+import ru.ifmo.rain.tebloev.bank.common.Person;
+import ru.ifmo.rain.tebloev.bank.common.Util;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class RemoteBank implements Bank {
+final class RemoteBank implements Bank {
     private final CheckedConsumer<Remote, RemoteException> exporter;
     private final ConcurrentMap<String, CommonAccount> accountMap = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, AbstractPerson> personMap = new ConcurrentHashMap<>();
@@ -17,13 +21,14 @@ public class RemoteBank implements Bank {
     @Override
     public CommonAccount createAccount(String id) throws RemoteException {
         final CommonAccount account = new CommonAccount(id);
-        if (accountMap.putIfAbsent(id, account) == null) {
-            Util.log("Creating account " + id);
-            exporter.accept(account);
-            return account;
-        } else {
-            return getAccount(id);
+
+        if (accountMap.putIfAbsent(id, account) != null) {
+            return null;
         }
+
+        Util.log("Creating account " + id);
+        exporter.accept(account);
+        return account;
     }
 
     @Override
@@ -35,13 +40,14 @@ public class RemoteBank implements Bank {
     @Override
     public Person createPerson(String firstName, String lastName, String passport) throws RemoteException {
         final AbstractPerson person = new RemotePerson(this, firstName, lastName, passport);
-        if (personMap.putIfAbsent(passport, person) == null) {
-            Util.log("Creating person with passport " + passport);
-            exporter.accept(person);
-            return person;
-        } else {
-            return getPerson(passport, true);
+
+        if (personMap.putIfAbsent(passport, person) != null) {
+            return null;
         }
+
+        Util.log("Creating person with passport " + passport);
+        exporter.accept(person);
+        return person;
     }
 
     @Override

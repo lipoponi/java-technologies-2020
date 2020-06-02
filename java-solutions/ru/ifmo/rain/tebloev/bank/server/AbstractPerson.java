@@ -1,4 +1,6 @@
-package ru.ifmo.rain.tebloev.bank;
+package ru.ifmo.rain.tebloev.bank.server;
+
+import ru.ifmo.rain.tebloev.bank.common.Person;
 
 import java.io.Serializable;
 import java.util.Map;
