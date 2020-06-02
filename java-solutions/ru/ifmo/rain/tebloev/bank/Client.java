@@ -42,10 +42,10 @@ public class Client {
         Person person = bank.createPerson(firstName, lastName, passport);
         Account account = person.createAccount(subId);
 
-        System.out.println("Account id: " + account.getId());
-        System.out.println("Money: " + account.getAmount());
-        System.out.println("Operating money");
+        Util.log("Account id: " + account.getId());
+        Util.log("Money: " + account.getAmount());
+        Util.log("Operating money");
         account.setAmount(account.getAmount() + change);
-        System.out.println("Money: " + account.getAmount());
+        Util.log("Money: " + account.getAmount());
     }
 }
