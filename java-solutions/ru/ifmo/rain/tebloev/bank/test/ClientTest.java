@@ -1,10 +1,12 @@
+package ru.ifmo.rain.tebloev.bank.test;
+
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import ru.ifmo.rain.tebloev.bank.Account;
-import ru.ifmo.rain.tebloev.bank.Client;
-import ru.ifmo.rain.tebloev.bank.Person;
+import ru.ifmo.rain.tebloev.bank.client.Client;
+import ru.ifmo.rain.tebloev.bank.common.Account;
+import ru.ifmo.rain.tebloev.bank.common.Person;
 
 import java.rmi.RemoteException;
 import java.util.HashMap;
@@ -68,7 +70,12 @@ public class ClientTest extends BaseTest {
         String lastName = STRINGS.get(7);
         String passport = STRINGS.get(8);
 
-        Person person = bank.createPerson(firstName, lastName, passport);
+
+        Person person = bank.getPerson(passport, true);
+        if (person == null) {
+            person = bank.createPerson(firstName, lastName, passport);
+        }
+
         Map<String, Integer> balanceMap = new HashMap<>();
 
         for (int i = 0; i < 30; i++) {

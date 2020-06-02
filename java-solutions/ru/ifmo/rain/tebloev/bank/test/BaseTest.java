@@ -1,3 +1,5 @@
+package ru.ifmo.rain.tebloev.bank.test;
+
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -7,8 +9,8 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import ru.ifmo.rain.tebloev.bank.Bank;
-import ru.ifmo.rain.tebloev.bank.Server;
+import ru.ifmo.rain.tebloev.bank.common.Bank;
+import ru.ifmo.rain.tebloev.bank.server.Server;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;

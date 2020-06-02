@@ -1,3 +1,5 @@
+package ru.ifmo.rain.tebloev.bank.test;
+
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 

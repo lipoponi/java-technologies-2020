@@ -1,20 +1,23 @@
+package ru.ifmo.rain.tebloev.bank.test;
+
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import ru.ifmo.rain.tebloev.bank.Account;
-import ru.ifmo.rain.tebloev.bank.Person;
+import ru.ifmo.rain.tebloev.bank.common.Account;
+import ru.ifmo.rain.tebloev.bank.common.Person;
 
 import java.rmi.RemoteException;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ServerTest extends BaseTest {
-
-
     @Test
     public void test01_accounts() throws RemoteException {
         for (String id : STRINGS) {
             Account account = bank.createAccount(id);
+            if (account == null) {
+                continue;
+            }
             Assert.assertEquals(account.getAmount(), 0);
             Assert.assertEquals(account.getId(), id);
             Assert.assertEquals(account, bank.getAccount(id));
@@ -28,7 +31,11 @@ public class ServerTest extends BaseTest {
             String lastName = STRINGS.get((i * 3 + 1) % STRINGS.size());
             String passport = STRINGS.get((i * 3 + 2) % STRINGS.size());
 
-            Person person = bank.createPerson(firstName, lastName, passport);
+            Person person = bank.getPerson(passport, true);
+            if (person == null) {
+                person = bank.createPerson(firstName, lastName, passport);
+            }
+
             Assert.assertEquals(person, bank.getPerson(passport, true));
             Person localPerson = bank.getPerson(passport, false);
 
@@ -42,7 +49,12 @@ public class ServerTest extends BaseTest {
     public void test03_accountOperations() throws RemoteException {
         for (int i = 0; i < STRINGS.size(); i++) {
             String id = STRINGS.get(i);
-            Account account = bank.createAccount(id);
+
+            Account account = bank.getAccount(id);
+            if (account == null) {
+                account = bank.createAccount(id);
+            }
+
             int balance = account.getAmount();
             for (int j = 0; j < 3; j++) {
                 int amount = INTEGERS.get((i + j) % INTEGERS.size());
@@ -59,11 +71,19 @@ public class ServerTest extends BaseTest {
         String lastName = STRINGS.get(4);
         String passport = STRINGS.get(8);
 
-        Person person = bank.createPerson(firstName, lastName, passport);
+        Person person = bank.getPerson(passport, true);
+        if (person == null) {
+            person = bank.createPerson(firstName, lastName, passport);
+        }
+
         for (int i = 0; i < STRINGS.size(); i++) {
             String subId = STRINGS.get(i);
 
             Account account = person.createAccount(subId);
+            if (account == null) {
+                continue;
+            }
+
             Assert.assertEquals(account, person.getAccount(subId));
             int amount = INTEGERS.get(i % INTEGERS.size());
             account.setAmount(amount);
@@ -74,9 +94,17 @@ public class ServerTest extends BaseTest {
     @Test
     public void test05_localRemote() throws RemoteException {
         String str = STRINGS.get(8);
-        Person person = bank.createPerson(str, str, str);
 
-        Account account = person.createAccount(str);
+        Person person = bank.getPerson(str, true);
+        if (person == null) {
+            person = bank.createPerson(str, str, str);
+        }
+
+        Account account = person.getAccount(str);
+        if (account == null) {
+            account = person.createAccount(str);
+        }
+
         for (int amount : INTEGERS) {
             int prevAmount = account.getAmount();
             Person localPerson = bank.getPerson(str, false);
