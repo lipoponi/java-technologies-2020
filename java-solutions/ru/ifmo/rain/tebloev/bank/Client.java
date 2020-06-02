@@ -37,7 +37,7 @@ public class Client {
         String lastName = args[1];
         String passport = args[2];
         String subId = args[3];
-        int amount = Integer.parseInt(args[4]);
+        int change = Integer.parseInt(args[4]);
 
         Person person = bank.createPerson(firstName, lastName, passport);
         Account account = person.createAccount(subId);
@@ -45,7 +45,7 @@ public class Client {
         System.out.println("Account id: " + account.getId());
         System.out.println("Money: " + account.getAmount());
         System.out.println("Operating money");
-        account.setAmount(account.getAmount() + amount);
+        account.setAmount(account.getAmount() + change);
         System.out.println("Money: " + account.getAmount());
     }
 }
