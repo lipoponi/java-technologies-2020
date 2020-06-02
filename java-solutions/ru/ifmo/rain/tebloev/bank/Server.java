@@ -47,7 +47,7 @@ public class Server implements Closeable {
             exported.add(registry);
 
             try {
-                RemoteBank bank = new RemoteBank(this::export);
+                Bank bank = new RemoteBank(this::export);
                 export(bank);
 
                 registry.rebind("bank", bank);
