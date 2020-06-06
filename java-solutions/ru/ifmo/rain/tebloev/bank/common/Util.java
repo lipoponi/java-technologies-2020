@@ -5,6 +5,8 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
 public class Util {
+    public static final int DEFAULT_RMI_PORT = 1099;
+
     public static void forcedUnexport(Remote remote) {
         try {
             UnicastRemoteObject.unexportObject(remote, true);

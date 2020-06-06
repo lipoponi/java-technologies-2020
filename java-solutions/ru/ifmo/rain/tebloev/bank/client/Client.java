@@ -16,7 +16,7 @@ public class Client {
     public static void main(final String... args) throws RemoteException {
         final Bank bank;
         try {
-            Registry registry = LocateRegistry.getRegistry(1099);
+            Registry registry = LocateRegistry.getRegistry(Util.DEFAULT_RMI_PORT);
             bank = (Bank) registry.lookup("bank");
         } catch (NotBoundException e) {
             Util.handleException("Bank is not bound", e);

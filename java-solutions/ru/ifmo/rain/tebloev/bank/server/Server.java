@@ -14,15 +14,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Server implements Closeable {
-    private final static int DEFAULT_PORT = 1099;
-
     private final AtomicBoolean started = new AtomicBoolean(false);
     private final Queue<Remote> exported = new ConcurrentLinkedQueue<>();
     private int port;
 
     public static void main(final String... args) {
         Server server = new Server();
-        server.start(DEFAULT_PORT);
+        server.start(Util.DEFAULT_RMI_PORT);
 
         Util.log("Server started");
 

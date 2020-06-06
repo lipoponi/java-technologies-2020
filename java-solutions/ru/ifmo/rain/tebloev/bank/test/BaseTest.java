@@ -10,6 +10,7 @@ import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import ru.ifmo.rain.tebloev.bank.common.Bank;
+import ru.ifmo.rain.tebloev.bank.common.Util;
 import ru.ifmo.rain.tebloev.bank.server.Server;
 
 import java.rmi.NotBoundException;
@@ -33,7 +34,6 @@ public class BaseTest {
             +55959, -234243, +788878
     );
 
-    private static final int DEFAULT_PORT = 1099;
     protected static Bank bank;
     private static Server server;
     private static Registry registry;
@@ -41,7 +41,7 @@ public class BaseTest {
     @BeforeClass
     public static void startServer() throws RemoteException {
         server = new Server();
-        server.start(DEFAULT_PORT);
+        server.start(Util.DEFAULT_RMI_PORT);
 
         try {
             registry = LocateRegistry.getRegistry();
