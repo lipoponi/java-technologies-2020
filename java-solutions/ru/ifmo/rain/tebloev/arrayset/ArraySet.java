@@ -4,43 +4,9 @@ import java.util.*;
 import java.util.function.Predicate;
 
 public class ArraySet<E> extends AbstractSet<E> implements NavigableSet<E> {
-    private class ArraySetIterator implements Iterator<E> {
-        private final List<E> data;
-        private final boolean reversed;
-        private int position = -1;
-
-        public ArraySetIterator(final List<E> data, final boolean reversed) {
-            this.data = data;
-            this.reversed = reversed;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return position + 1 < data.size();
-        }
-
-        @Override
-        public E next() {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
-            }
-
-            position++;
-            int idx = reversed ? data.size() - 1 - position : position;
-
-            return data.get(idx);
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    private List<E> data;
     private final Comparator<? super E> comparator;
     private final boolean reversed;
-
+    private List<E> data;
     public ArraySet() {
         data = List.copyOf(new ArrayList<>());
         comparator = null;
@@ -169,13 +135,11 @@ public class ArraySet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return idx;
     }
 
-
     @Override
     public E lower(E e) {
         int idx = reversed ? lowerBound(e, false) : upperBound(e, false);
         return getElementNullable(idx);
     }
-
 
     @Override
     public E floor(E e) {
@@ -183,13 +147,11 @@ public class ArraySet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return getElementNullable(idx);
     }
 
-
     @Override
     public E ceiling(E e) {
         int idx = reversed ? upperBound(e, true) : lowerBound(e, true);
         return getElementNullable(idx);
     }
-
 
     @Override
     public E higher(E e) {
@@ -201,7 +163,6 @@ public class ArraySet<E> extends AbstractSet<E> implements NavigableSet<E> {
     public int size() {
         return data.size();
     }
-
 
     @Override
     public Comparator<? super E> comparator() {
@@ -222,36 +183,29 @@ public class ArraySet<E> extends AbstractSet<E> implements NavigableSet<E> {
         }
     }
 
-
     @Override
     public Iterator<E> iterator() {
         return new ArraySetIterator(data, reversed);
     }
-
 
     @Override
     public ArraySet<E> descendingSet() {
         return new ArraySet<E>(data, comparator, !reversed);
     }
 
-
     @Override
     public Iterator<E> descendingIterator() {
         return new ArraySetIterator(data, !reversed);
     }
 
-
-
     private ArraySet<E> subSetByIndices(int l, int r) {
         return new ArraySet<E>(data.subList(l, r), comparator, false);
     }
-
 
     @Override
     public ArraySet<E> subSet(E le, E re) {
         return subSet(le, true, re, false);
     }
-
 
     @Override
     public ArraySet<E> subSet(E le, boolean li, E re, boolean ri) {
@@ -267,12 +221,10 @@ public class ArraySet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return tailSet(le, li).headSet(re, ri);
     }
 
-
     @Override
     public ArraySet<E> headSet(E e) {
         return headSet(e, false);
     }
-
 
     @Override
     public ArraySet<E> headSet(E e, boolean inclusive) {
@@ -285,12 +237,10 @@ public class ArraySet<E> extends AbstractSet<E> implements NavigableSet<E> {
         }
     }
 
-
     @Override
     public ArraySet<E> tailSet(E e) {
         return tailSet(e, true);
     }
-
 
     @Override
     public ArraySet<E> tailSet(E e, boolean inclusive) {
@@ -302,7 +252,6 @@ public class ArraySet<E> extends AbstractSet<E> implements NavigableSet<E> {
             return subSetByIndices(idx, data.size());
         }
     }
-
 
     @Override
     public boolean add(E ignored) {
@@ -339,15 +288,46 @@ public class ArraySet<E> extends AbstractSet<E> implements NavigableSet<E> {
         throw new UnsupportedOperationException();
     }
 
-
     @Override
     public E pollFirst() {
         throw new UnsupportedOperationException();
     }
 
-
     @Override
     public E pollLast() {
         throw new UnsupportedOperationException();
+    }
+
+    private class ArraySetIterator implements Iterator<E> {
+        private final List<E> data;
+        private final boolean reversed;
+        private int position = -1;
+
+        public ArraySetIterator(final List<E> data, final boolean reversed) {
+            this.data = data;
+            this.reversed = reversed;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return position + 1 < data.size();
+        }
+
+        @Override
+        public E next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+
+            position++;
+            int idx = reversed ? data.size() - 1 - position : position;
+
+            return data.get(idx);
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
     }
 }

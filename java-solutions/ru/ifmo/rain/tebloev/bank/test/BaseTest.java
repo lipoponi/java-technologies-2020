@@ -37,6 +37,8 @@ public class BaseTest {
     protected static Bank bank;
     private static Server server;
     private static Registry registry;
+    @Rule
+    public TestRule watcher = watcher(description -> System.err.println("=== Running " + description.getMethodName()));
 
     @BeforeClass
     public static void startServer() throws RemoteException {
@@ -60,9 +62,6 @@ public class BaseTest {
     public static void closeServer() {
         server.close();
     }
-
-    @Rule
-    public TestRule watcher = watcher(description -> System.err.println("=== Running " + description.getMethodName()));
 
     protected static TestWatcher watcher(final Consumer<Description> watcher) {
         return new TestWatcher() {

@@ -24,7 +24,7 @@ public class Walk {
             try (Writer output = new FileWriter(outputPath, StandardCharsets.UTF_8)) {
                 Worker worker = new Worker(input, output, err);
                 worker.work();
-            } catch(final UnableToReadException e) {
+            } catch (final UnableToReadException e) {
                 throw e;
             } catch (final IOException e) {
                 throw new CannotOpenWriterException(e);

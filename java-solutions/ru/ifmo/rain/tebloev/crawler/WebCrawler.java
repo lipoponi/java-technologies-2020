@@ -15,49 +15,12 @@ public class WebCrawler implements Crawler {
     private final int perHost;
     private final ConcurrentMap<String, Host> hostMap;
 
-    private class Host {
-        private final BlockingQueue<Runnable> waiting = new LinkedBlockingQueue<>();
-        private final Semaphore semaphore = new Semaphore(perHost);
-
-        private void addJob(Runnable job) {
-            if (semaphore.tryAcquire()) {
-                downloadExecutor.execute(job);
-            } else {
-                waiting.add(job);
-            }
-        }
-
-        private void startOneWaiting() {
-            Runnable job = waiting.poll();
-            if (job == null) {
-                return;
-            }
-
-            try {
-                semaphore.acquire();
-                downloadExecutor.execute(job);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
-    }
-
-    private static class Validator {
-        private static void notNull(String value) {
-            if (value == null) {
-                throw new IllegalArgumentException("Null argument");
-            }
-        }
-
-        private static void isNumber(String value) {
-            notNull(value);
-
-            try {
-                Integer.parseInt(value);
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Invalid number format", e);
-            }
-        }
+    public WebCrawler(Downloader downloader, int downloaderCount, int extractorCount, int perHost) {
+        this.downloader = downloader;
+        this.downloadExecutor = Executors.newFixedThreadPool(downloaderCount);
+        this.extractExecutor = Executors.newFixedThreadPool(extractorCount);
+        this.perHost = perHost;
+        this.hostMap = new ConcurrentHashMap<>();
     }
 
     private static <V extends Exception> V mergeWithSuppression(V a, V b) {
@@ -118,15 +81,6 @@ public class WebCrawler implements Crawler {
             printError("Usage: WebCrawler url [depth [downloads [extractors [perHost]]]]");
         }
     }
-
-    public WebCrawler(Downloader downloader, int downloaderCount, int extractorCount, int perHost) {
-        this.downloader = downloader;
-        this.downloadExecutor = Executors.newFixedThreadPool(downloaderCount);
-        this.extractExecutor = Executors.newFixedThreadPool(extractorCount);
-        this.perHost = perHost;
-        this.hostMap = new ConcurrentHashMap<>();
-    }
-
 
     private List<String> processLayer(List<String> layer, List<String> downloaded, ConcurrentMap<String, IOException> errors,
                                       Set<String> seen, boolean extractLinks) {
@@ -224,5 +178,50 @@ public class WebCrawler implements Crawler {
     public void close() {
         shutdownAndAwaitTermination(downloadExecutor);
         shutdownAndAwaitTermination(extractExecutor);
+    }
+
+    private static class Validator {
+        private static void notNull(String value) {
+            if (value == null) {
+                throw new IllegalArgumentException("Null argument");
+            }
+        }
+
+        private static void isNumber(String value) {
+            notNull(value);
+
+            try {
+                Integer.parseInt(value);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Invalid number format", e);
+            }
+        }
+    }
+
+    private class Host {
+        private final BlockingQueue<Runnable> waiting = new LinkedBlockingQueue<>();
+        private final Semaphore semaphore = new Semaphore(perHost);
+
+        private void addJob(Runnable job) {
+            if (semaphore.tryAcquire()) {
+                downloadExecutor.execute(job);
+            } else {
+                waiting.add(job);
+            }
+        }
+
+        private void startOneWaiting() {
+            Runnable job = waiting.poll();
+            if (job == null) {
+                return;
+            }
+
+            try {
+                semaphore.acquire();
+                downloadExecutor.execute(job);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 }

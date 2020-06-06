@@ -22,6 +22,31 @@ import java.util.jar.Manifest;
  */
 public class JarImplementor extends Implementor implements JarImpler {
     /**
+     * Generates implementation for specified command line arguments. Required
+     * arguments are {@code classname} and {@code output file}. Usage:
+     * {@code -jar <classname> <output file>}
+     *
+     * @param args three command line arguments
+     */
+    public static void main(String[] args) {
+        try {
+            if (args == null || args.length != 3 || !"-jar".equals(args[0])) {
+                throw new ImplerException("usage: -jar <classname> <output file>");
+            }
+
+            try {
+                new JarImplementor().implementJar(Class.forName(args[1]), Path.of(args[2]));
+            } catch (ClassNotFoundException e) {
+                throw new ImplerException("class not found", e);
+            } catch (InvalidPathException e) {
+                throw new ImplerException("invalid path", e);
+            }
+        } catch (ImplerException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    /**
      * Converts {@link Path} object to string with correct filepath related to
      * jar.
      *
@@ -90,31 +115,6 @@ public class JarImplementor extends Implementor implements JarImpler {
             throw e;
         } catch (Exception e) {
             throw new ImplerException("unknown error", e);
-        }
-    }
-
-    /**
-     * Generates implementation for specified command line arguments. Required
-     * arguments are {@code classname} and {@code output file}. Usage:
-     * {@code -jar <classname> <output file>}
-     *
-     * @param args three command line arguments
-     */
-    public static void main(String[] args) {
-        try {
-            if (args == null || args.length != 3 || !"-jar".equals(args[0])) {
-                throw new ImplerException("usage: -jar <classname> <output file>");
-            }
-
-            try {
-                new JarImplementor().implementJar(Class.forName(args[1]), Path.of(args[2]));
-            } catch (ClassNotFoundException e) {
-                throw new ImplerException("class not found", e);
-            } catch (InvalidPathException e) {
-                throw new ImplerException("invalid path", e);
-            }
-        } catch (ImplerException e) {
-            System.err.println(e.getMessage());
         }
     }
 }

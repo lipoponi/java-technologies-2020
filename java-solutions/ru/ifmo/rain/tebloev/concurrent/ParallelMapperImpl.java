@@ -11,9 +11,9 @@ import java.util.function.Function;
  * @author Stanislav Tebloev
  */
 public class ParallelMapperImpl implements ParallelMapper {
-    private boolean closed = false;
     private final Queue<Runnable> jobQueue;
     private final List<Thread> threadList;
+    private boolean closed = false;
 
     /**
      * Constructs ParallelMapperImpl with specified number of worker threads.

@@ -18,6 +18,31 @@ import java.nio.file.Path;
  */
 public class Implementor implements Impler {
     /**
+     * Generates implementation for specified command line arguments. Required
+     * arguments are {@code classname} and {@code output path}. Usage:
+     * {@code <classname> <output path>}
+     *
+     * @param args two command line arguments
+     */
+    public static void main(String[] args) {
+        try {
+            if (args == null || args.length != 2) {
+                throw new ImplerException("usage: <classname> <output path>");
+            }
+
+            try {
+                new Implementor().implement(Class.forName(args[0]), Path.of(args[1]));
+            } catch (ClassNotFoundException e) {
+                throw new ImplerException("class not found", e);
+            } catch (InvalidPathException e) {
+                throw new ImplerException("invalid path", e);
+            }
+        } catch (ImplerException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    /**
      * Returns package {@link Path} for specified token.
      *
      * @return {@link Path} object of package containing specified token
@@ -57,31 +82,6 @@ public class Implementor implements Impler {
             throw e;
         } catch (Exception e) {
             throw new ImplerException("unknown error", e);
-        }
-    }
-
-    /**
-     * Generates implementation for specified command line arguments. Required
-     * arguments are {@code classname} and {@code output path}. Usage:
-     * {@code <classname> <output path>}
-     *
-     * @param args two command line arguments
-     */
-    public static void main(String[] args) {
-        try {
-            if (args == null || args.length != 2) {
-                throw new ImplerException("usage: <classname> <output path>");
-            }
-
-            try {
-                new Implementor().implement(Class.forName(args[0]), Path.of(args[1]));
-            } catch (ClassNotFoundException e) {
-                throw new ImplerException("class not found", e);
-            } catch (InvalidPathException e) {
-                throw new ImplerException("invalid path", e);
-            }
-        } catch (ImplerException e) {
-            System.err.println(e.getMessage());
         }
     }
 }
