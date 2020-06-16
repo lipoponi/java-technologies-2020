@@ -1,7 +1,11 @@
 package ru.ifmo.rain.tebloev.hello;
 
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.SocketAddress;
+import java.net.StandardSocketOptions;
+import java.nio.ByteBuffer;
+import java.nio.channels.DatagramChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
@@ -9,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 class Util {
     private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
-    private static final int AWAIT_TERMINATION_TIMEOUT_MS = 500;
+    private static final int AWAIT_TERMINATION_TIMEOUT_MS = 100;
 
     static void shutdownAndAwaitTermination(ExecutorService executor) {
         executor.shutdown();
@@ -21,6 +25,13 @@ class Util {
             executor.shutdownNow();
             Thread.currentThread().interrupt();
         }
+    }
+
+    static int getChannelBufferSize(DatagramChannel channel) throws IOException {
+        int receiveBufferSize = channel.getOption(StandardSocketOptions.SO_RCVBUF);
+        int sendBufferSize = channel.getOption(StandardSocketOptions.SO_SNDBUF);
+
+        return Math.max(receiveBufferSize, sendBufferSize);
     }
 
     static DatagramPacket createDefaultReceivePacket(int bufferSize) {
@@ -39,6 +50,10 @@ class Util {
 
     static void handleException(Exception e) {
         System.err.println(e.getMessage());
+    }
+
+    static String extractString(ByteBuffer buffer) {
+        return DEFAULT_CHARSET.decode(buffer).toString();
     }
 
     static void handleThreadException(int threadId, Exception e) {
