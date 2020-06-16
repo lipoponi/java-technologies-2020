@@ -7,17 +7,11 @@ import java.net.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 public class HelloUDPClient implements HelloClient {
     private static final int SOCKET_TIMEOUT_MS = 100;
     private static final int ATTEMPTS_PER_REQUEST = 100;
-
-    private static boolean isResponseCorrect(String response, int threadIndex, int requestIndex) {
-        String regex = String.format("^\\D*%d\\D+%d\\D*$", threadIndex, requestIndex);
-        return Pattern.matches(regex, response);
-    }
 
     @Override
     public void run(String host, int port, String prefix, int threads, int requests) {
@@ -42,7 +36,7 @@ public class HelloUDPClient implements HelloClient {
                             socket.receive(receivePacket);
                             String response = Util.extractString(receivePacket);
 
-                            if (isResponseCorrect(response, threadIndex, requestIndex)) {
+                            if (Util.isResponseCorrect(response, threadIndex, requestIndex)) {
                                 System.out.println(String.format("%s%n%s", request, response));
                                 break;
                             }

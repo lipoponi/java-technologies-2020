@@ -9,7 +9,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.nio.charset.StandardCharsets;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
@@ -50,7 +49,7 @@ public class HelloUDPNonblockingServer implements HelloServer {
                         key.interestOps(SelectionKey.OP_READ);
                     }
 
-                    buffer.clear().put(packet.message.getBytes(StandardCharsets.UTF_8));
+                    buffer.clear().put(Util.getBytes(packet.message));
                     channel.send(buffer.flip(), packet.address);
                 }
             } catch (IOException e) {
@@ -77,10 +76,11 @@ public class HelloUDPNonblockingServer implements HelloServer {
 
             (serverThread = new Thread(() -> {
                 Queue<Packet> forSendQueue = new ConcurrentLinkedQueue<>();
+                Consumer<SelectionKey> selectionHandler = getSelectionHandler(selector, forSendQueue);
 
                 while (!Thread.currentThread().isInterrupted()) {
                     try {
-                        selector.select(getSelectionHandler(selector, forSendQueue));
+                        selector.select(selectionHandler);
                     } catch (IOException e) {
                         Util.handleException(new Exception("IO error while selecting", e));
                     }

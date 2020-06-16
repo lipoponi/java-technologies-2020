@@ -10,6 +10,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 class Util {
     private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
@@ -59,5 +60,14 @@ class Util {
     static void handleThreadException(int threadId, Exception e) {
         String msg = String.format("Exception in thread '%d': %s", threadId, e.getMessage());
         handleException(new Exception(msg, e));
+    }
+
+    static byte[] getBytes(String string) {
+        return string.getBytes(DEFAULT_CHARSET);
+    }
+
+    static boolean isResponseCorrect(String response, int threadIndex, int requestIndex) {
+        String regex = String.format("^\\D*%d\\D+%d\\D*$", threadIndex, requestIndex);
+        return Pattern.matches(regex, response);
     }
 }
