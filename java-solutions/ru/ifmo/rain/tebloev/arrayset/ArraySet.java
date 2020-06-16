@@ -7,6 +7,7 @@ public class ArraySet<E> extends AbstractSet<E> implements NavigableSet<E> {
     private final Comparator<? super E> comparator;
     private final boolean reversed;
     private List<E> data;
+
     public ArraySet() {
         data = List.copyOf(new ArrayList<>());
         comparator = null;
