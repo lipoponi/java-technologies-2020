@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 class Util {
+    static final int RECEIVE_TIMEOUT_MS = 100;
     private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
     private static final int AWAIT_TERMINATION_TIMEOUT_MS = 100;
 

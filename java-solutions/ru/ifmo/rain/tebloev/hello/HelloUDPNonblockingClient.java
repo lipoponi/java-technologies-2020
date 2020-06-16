@@ -45,7 +45,7 @@ public class HelloUDPNonblockingClient implements HelloClient {
                                         key.selector().wakeup();
                                     }
                                 }
-                            }, 200, TimeUnit.MILLISECONDS);
+                            }, Util.RECEIVE_TIMEOUT_MS, TimeUnit.MILLISECONDS);
                         }
                     }
                 }

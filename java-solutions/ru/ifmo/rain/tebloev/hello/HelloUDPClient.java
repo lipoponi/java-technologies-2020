@@ -10,7 +10,6 @@ import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
 public class HelloUDPClient implements HelloClient {
-    private static final int SOCKET_TIMEOUT_MS = 100;
     private static final int ATTEMPTS_PER_REQUEST = 100;
 
     @Override
@@ -22,7 +21,7 @@ public class HelloUDPClient implements HelloClient {
 
         IntStream.range(0, threads).forEach(threadIndex -> senderExecutor.execute(() -> {
             try (DatagramSocket socket = new DatagramSocket(null)) {
-                socket.setSoTimeout(SOCKET_TIMEOUT_MS);
+                socket.setSoTimeout(Util.RECEIVE_TIMEOUT_MS);
                 socket.connect(serverAddress);
 
                 IntStream.range(0, requests).forEach(requestIndex -> {
